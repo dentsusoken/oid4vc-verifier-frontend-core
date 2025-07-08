@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
-import { presentationIdSchema, PresentationId } from './PresentationId';
+import { describe, expect, it } from 'vitest';
+import { PresentationId, presentationIdSchema } from './PresentationId';
 
 describe('PresentationIdSchema', () => {
   describe('正常系', () => {
@@ -25,7 +24,7 @@ describe('PresentationIdSchema', () => {
       [123, 'number'],
       [[], 'array'],
       [{}, 'object'],
-    ])('should reject invalid input: %s (%s)', (invalidInput, description) => {
+    ])('should reject invalid input: %s (%s)', (invalidInput, _) => {
       expect(() => presentationIdSchema.parse(invalidInput)).toThrow();
     });
   });

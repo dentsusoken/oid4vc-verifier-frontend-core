@@ -1,7 +1,7 @@
-import { expect } from 'vitest';
-import { GetWalletResponseResult } from './GetWalletResponse.types';
+import { describe, expect, it } from 'vitest';
+import { GetWalletResponseResponse } from './GetWalletResponse.types';
 
-describe('GetWalletResponseResult', () => {
+describe('GetWalletResponseResponse', () => {
   it('should create an instance from JSON', () => {
     const json = {
       id_token: 'test_id_token',
@@ -11,7 +11,7 @@ describe('GetWalletResponseResult', () => {
       error_description: 'test_error_description',
     };
 
-    const result = GetWalletResponseResult.fromJSON(json);
+    const result = GetWalletResponseResponse.fromJSON(json);
 
     expect(result.idToken).toBe(json.id_token);
     expect(result.vpToken).toBe(json.vp_token);
@@ -21,7 +21,7 @@ describe('GetWalletResponseResult', () => {
   });
 
   it('should convert an instance to JSON', () => {
-    const instance = new GetWalletResponseResult(
+    const instance = new GetWalletResponseResponse(
       'test_id_token',
       'test_vp_token',
       undefined,

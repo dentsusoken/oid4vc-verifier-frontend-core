@@ -70,5 +70,5 @@ export const defaultGenerateWalletResponseRedirectUriTemplate: GenerateWalletRes
     const url = new URL(baseUrl);
     url.pathname = path;
     url.searchParams.set('response_code', placeholder);
-    return url.toString();
+    return decodeURIComponent(url.toString());
   };

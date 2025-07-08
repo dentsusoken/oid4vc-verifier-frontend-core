@@ -1,3 +1,4 @@
+import { MdocVerifier } from '../ports';
 import {
   GenerateWalletRedirectUri,
   GenerateWalletResponseRedirectUriTemplate,
@@ -128,6 +129,14 @@ export interface PortsOut {
    * @returns GeneratePresentationDefinition function
    */
   generatePresentationDefinition(): GeneratePresentationDefinition;
+
+  // mdoc
+  /**
+   * Returns a MDOC verifier instance
+   *
+   * @returns MdocVerifier instance
+   */
+  mdocVerifier(): MdocVerifier;
 
   // session
   /**

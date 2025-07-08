@@ -260,12 +260,12 @@ const validateUserAgent = (request: Request, logger: Logger): string => {
  *
  * @internal
  */
-const storeTransactionInSession = (
+const storeTransactionInSession = async (
   session: Session<SessionSchemas>,
   presentationId: PresentationId,
   nonce: Nonce,
   logger: Logger
-): void => {
+): Promise<void> => {
   try {
     logger.debug(
       'InitTransactionService',
@@ -278,8 +278,8 @@ const storeTransactionInSession = (
       }
     );
 
-    session.set('presentationId', presentationId);
-    session.set('nonce', nonce);
+    await session.set('presentationId', presentationId);
+    await session.set('nonce', nonce);
 
     logger.info(
       'InitTransactionService',
@@ -543,7 +543,7 @@ export const createInitTransactionService = ({
       }
 
       // Store transaction data in session
-      storeTransactionInSession(
+      await storeTransactionInSession(
         session,
         initTransactionResponse.presentationId,
         nonce,

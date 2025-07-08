@@ -66,7 +66,13 @@ export const defaultGenerateWalletRedirectUri: GenerateWalletRedirectUri = (
   query
 ) => {
   const url = new URL(redirectUri);
+  if (!query.request) {
+    delete query.request;
+  }
+  if (!query.request_uri) {
+    delete query.request_uri;
+  }
   const queryString = new URLSearchParams(query).toString();
   url.search = queryString;
-  return url.toString();
+  return decodeURIComponent(url.toString());
 };

@@ -6,6 +6,7 @@ import {
 import { createDefaultFetcher } from '../adapters/out/http';
 import { defaultIsMobile } from '../adapters/out/http/DefaultIsMobile';
 import { createDefaultLogger } from '../adapters/out/logging';
+import { MdocVerifier } from '../ports';
 import {
   GenerateWalletRedirectUri,
   GenerateWalletResponseRedirectUriTemplate,
@@ -161,6 +162,14 @@ export abstract class AbstractPortsOut implements PortsOut {
    * @returns GeneratePresentationDefinition implementation
    */
   abstract generatePresentationDefinition(): GeneratePresentationDefinition;
+
+  // mdoc
+  /**
+   * Returns a MDOC verifier instance
+   *
+   * @returns MdocVerifier instance
+   */
+  abstract mdocVerifier(): MdocVerifier;
 
   // session
   /**

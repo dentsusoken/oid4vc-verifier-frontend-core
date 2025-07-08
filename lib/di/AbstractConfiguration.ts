@@ -1,3 +1,4 @@
+import { LoggerConfig } from '../ports';
 import {
   JarMode,
   PresentationDefinitionMode,
@@ -5,11 +6,6 @@ import {
   ResponseMode,
 } from '../ports/input';
 import { HttpRequestOptions } from '../ports/out/http';
-import {
-  DEFAULT_LOGGER_CONFIG,
-  LoggerConfig,
-  PRODUCTION_LOGGER_CONFIG,
-} from '../ports/out/logging';
 import { Configuration } from './Configuration';
 
 /**
@@ -96,6 +92,16 @@ export abstract class AbstractConfiguration implements Configuration {
   abstract initTransactionApiPath(): string;
 
   /**
+   * GetWalletResponse API path
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the relative path for the wallet response endpoint that will be combined with `apiBaseUrl()`.
+   *
+   * @returns API path string for wallet response
+   */
+  abstract getWalletResponseApiPath(): string;
+
+  /**
    * Public URL of the verifier application
    *
    * **Abstract method** - Must be implemented by concrete classes.
@@ -128,6 +134,17 @@ export abstract class AbstractConfiguration implements Configuration {
    */
   abstract walletResponseRedirectPath(): string;
 
+  /**
+   * Logger configuration
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the appropriate logger configuration based on the
+   * environment.
+   *
+   * @returns Environment-appropriate logger configuration
+   */
+  abstract loggerConfig(): LoggerConfig;
+
   // Default implementations - can be overridden if needed
 
   /**
@@ -152,22 +169,6 @@ export abstract class AbstractConfiguration implements Configuration {
    */
   tokenType(): PresentationType {
     return 'vp_token';
-  }
-
-  /**
-   * Logger configuration based on environment
-   *
-   * Automatically selects appropriate logger configuration based on
-   * NODE_ENV environment variable:
-   * - Production: Minimal logging, security-focused
-   * - Development/Other: Verbose logging, debug-friendly
-   *
-   * @returns Environment-appropriate logger configuration
-   */
-  loggerConfig(): LoggerConfig {
-    return process.env.NODE_ENV === 'production'
-      ? PRODUCTION_LOGGER_CONFIG
-      : DEFAULT_LOGGER_CONFIG;
   }
 
   /**

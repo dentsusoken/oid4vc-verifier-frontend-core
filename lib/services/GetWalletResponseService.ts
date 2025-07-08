@@ -486,7 +486,10 @@ export const createGetWalletResponseService = ({
       );
 
       // Return the MDOC verification result
-      return mdocVerifyResult;
+      return {
+        ...mdocVerifyResult,
+        vpToken: walletResponse.vpToken,
+      };
     } catch (error) {
       const endTime = performance.now();
       const duration = endTime - startTime;

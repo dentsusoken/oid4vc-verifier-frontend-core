@@ -85,4 +85,4 @@ export class GetWalletResponseResponse {
   }
 }
 
-export type GetWalletResponseResult = MdocVerifyResult;
+export type GetWalletResponseResult = MdocVerifyResult & { vpToken?: string };

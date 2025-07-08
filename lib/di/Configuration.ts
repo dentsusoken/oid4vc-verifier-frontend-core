@@ -74,6 +74,16 @@ export interface Configuration {
   initTransactionApiPath(): string;
 
   /**
+   * GetWalletResponse API path
+   *
+   * The relative path for the wallet response endpoint.
+   * Combined with `apiBaseUrl()` to form the complete endpoint URL.
+   *
+   * @returns API path string (e.g., '/api/v1/get-wallet-response')
+   */
+  getWalletResponseApiPath(): string;
+
+  /**
    * Public URL of the verifier application
    *
    * The externally accessible URL where the verification application

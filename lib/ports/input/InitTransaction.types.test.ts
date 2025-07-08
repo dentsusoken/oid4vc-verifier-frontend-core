@@ -1,4 +1,6 @@
 import { PresentationDefinition } from '@vecrea/oid4vc-prex';
+import { describe, expect, it } from 'vitest';
+import { PresentationId } from '../../domain';
 import {
   InitTransactionRequest,
   InitTransactionRequestSchema,
@@ -115,13 +117,19 @@ describe('InitTransaction.types', () => {
   describe('InitTransactionResponse', () => {
     describe('constructor', () => {
       it('should create a new instance of InitTransactionResponse', () => {
-        const response = new InitTransactionResponse('1234', '1234');
+        const response = new InitTransactionResponse(
+          '1234' as PresentationId,
+          '1234'
+        );
         expect(response).toBeInstanceOf(InitTransactionResponse);
       });
     });
     describe('toJSON', () => {
       it('should return a JSON representation of the InitTransactionResponse', () => {
-        const response = new InitTransactionResponse('1234', '1234');
+        const response = new InitTransactionResponse(
+          '1234' as PresentationId,
+          '1234'
+        );
         const json = response.toJSON();
         expect(json).toEqual({
           presentation_id: '1234',
@@ -142,7 +150,7 @@ describe('InitTransaction.types', () => {
     describe('toWalletRedirectParams', () => {
       it('should return WalletRedirectParams', () => {
         const response = new InitTransactionResponse(
-          '1234',
+          '1234' as PresentationId,
           '1234',
           'request',
           'requestUri'
