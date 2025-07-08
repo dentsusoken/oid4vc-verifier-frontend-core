@@ -1,4 +1,4 @@
-import { PresentationDefinition } from 'oid4vc-prex';
+import { PresentationDefinition } from '@vecrea/oid4vc-prex';
 import {
   InitTransactionRequest,
   InitTransactionRequestSchema,

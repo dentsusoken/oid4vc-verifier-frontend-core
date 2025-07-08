@@ -1,32 +1,30 @@
-/// <reference types="vitest" />
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
+  plugins: [
+    dts({
+      rollupTypes: true,
+      exclude: ['**/*.spec.ts', '**/*.test.ts'],
+    }),
+  ],
   build: {
     lib: {
-      entry: {
-        'adapters/out/http': './lib/adapters/out/http/index.ts',
-        'adapters/out/session': './lib/adapters/out/session/index.ts',
-        di: './lib/di/index.ts',
-        services: './lib/services/index.ts',
-        utils: './lib/utils/index.ts',
-        'ports/input': './lib/ports/input/index.ts',
-        'ports/out/http': './lib/ports/out/http/index.ts',
-        'ports/out/session': './lib/ports/out/session/index.ts',
-      },
+      entry: './lib/index.ts',
+      name: 'oid4vc-verifier-endpoint-core',
       formats: ['es', 'cjs'],
-      name: 'oid4vc-verifier-frontend-core',
-      fileName: (format, entry) => {
-        const ext = format === 'es' ? 'js' : format;
-        const indexFile = `index.${ext}`;
-
-        return entry === 'main' ? indexFile : `${entry}/${indexFile}`;
-        //return `${dir}/index.${ext}`;
+      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
+    },
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (
+          warning.code === 'CIRCULAR_DEPENDENCY' &&
+          !warning.message.includes('node_modules')
+        ) {
+          console.warn('Circular dependency detected:', warning.message);
+        }
+        warn(warning);
       },
     },
-  },
-  test: {
-    globals: true,
-    include: ['./lib/**/*.test.ts', './lib/**/*.spec.ts'],
   },
 });

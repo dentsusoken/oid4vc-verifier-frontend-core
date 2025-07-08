@@ -1,8 +1,9 @@
 import {
   PresentationDefinition,
   presentationDefinitionSchema,
-} from 'oid4vc-prex';
+} from '@vecrea/oid4vc-prex';
 import { z } from 'zod';
+import { PresentationId, presentationIdSchema } from '../../domain';
 
 /**
  * Zod schema for the PresentationType.
@@ -163,7 +164,7 @@ export class InitTransactionRequest {
  * @throws {z.ZodError} If the InitTransactionResponse is invalid
  */
 export const initTransactionResponseSchema = z.object({
-  presentation_id: z.string(),
+  presentation_id: presentationIdSchema,
   client_id: z.string(),
   request: z.string().optional(),
   request_uri: z.string().url().optional(),
@@ -201,7 +202,7 @@ export class InitTransactionResponse {
    * @param {string} requestUri - The request uri
    */
   constructor(
-    public readonly presentationId: string,
+    public readonly presentationId: PresentationId,
     public readonly clientId: string,
     public readonly request?: string,
     public readonly requestUri?: string
@@ -246,4 +247,12 @@ export class InitTransactionResponse {
       request_uri: this.requestUri,
     };
   }
+}
+
+/**
+ * Represents a type of InitTransaction return value
+ */
+export interface InitTransactionResult {
+  walletRedirectUri: string;
+  isMobile: boolean;
 }

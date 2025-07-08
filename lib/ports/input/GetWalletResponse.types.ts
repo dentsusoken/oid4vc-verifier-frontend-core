@@ -1,16 +1,17 @@
 import {
   PresentationSubmission,
   presentationSubmissionSchema,
-} from 'oid4vc-prex';
+} from '@vecrea/oid4vc-prex';
 import { z } from 'zod';
+import { MdocVerifyResult } from '../../../../oid4vc-verifier-frontend-hono/build/mdoc-cbor-ts/dist/types/handlers/verify/mdoc';
 
 /**
- * Zod schema for the GetWalletResponseResult.
- * This schema ensures that the GetWalletResponseResult is valid.
+ * Zod schema for the GetWalletResponseResponse.
+ * This schema ensures that the GetWalletResponseResponse is valid.
  * @type {z.ZodObject}
- * @throws {z.ZodError} If the GetWalletResponseResult is invalid
+ * @throws {z.ZodError} If the GetWalletResponseResponse is invalid
  */
-export const GetWalletResponseResultSchema = z.object({
+export const GetWalletResponseResponseSchema = z.object({
   id_token: z.string().optional(),
   vp_token: z.string().optional(),
   presentation_submission: presentationSubmissionSchema.optional(),
@@ -19,14 +20,14 @@ export const GetWalletResponseResultSchema = z.object({
 });
 
 /**
- * Represents a type of GetWalletResponseResult JSON
+ * Represents a type of GetWalletResponseResponse JSON
  */
-export type GetWalletResponseResultJSON = z.infer<
-  typeof GetWalletResponseResultSchema
+export type GetWalletResponseResponseJSON = z.infer<
+  typeof GetWalletResponseResponseSchema
 >;
 
 /**
- * Represents a GetWalletResponseResult
+ * Represents a GetWalletResponseResponse
  * @class
  * @property {string} idToken - The id token
  * @property {string} vpToken - The vp token
@@ -34,9 +35,9 @@ export type GetWalletResponseResultJSON = z.infer<
  * @property {string} error - The error
  * @property {string} error_description - The error description
  */
-export class GetWalletResponseResult {
+export class GetWalletResponseResponse {
   /**
-   * Creates a new GetWalletResponseResult
+   * Creates a new GetWalletResponseResponse
    * @param {string} idToken - The id token
    * @param {string} vpToken - The vp token
    * @param {PresentationSubmission} presentationSubmission - The presentation submission
@@ -52,13 +53,13 @@ export class GetWalletResponseResult {
   ) {}
 
   /**
-   * Creates a new GetWalletResponseResult from a JSON object
+   * Creates a new GetWalletResponseResponse from a JSON object
    * @param {unknown} json - The JSON object
-   * @returns {GetWalletResponseResult} The GetWalletResponseResult
+   * @returns {GetWalletResponseResponse} The GetWalletResponseResponse
    */
-  static fromJSON(json: unknown): GetWalletResponseResult {
-    const parsed = GetWalletResponseResultSchema.parse(json);
-    return new GetWalletResponseResult(
+  static fromJSON(json: unknown): GetWalletResponseResponse {
+    const parsed = GetWalletResponseResponseSchema.parse(json);
+    return new GetWalletResponseResponse(
       parsed.id_token,
       parsed.vp_token,
       parsed.presentation_submission
@@ -70,10 +71,10 @@ export class GetWalletResponseResult {
   }
 
   /**
-   * Converts the GetWalletResponseResult to a JSON object
-   * @returns {GetWalletResponseResultJSON} The JSON object
+   * Converts the GetWalletResponseResponse to a JSON object
+   * @returns {GetWalletResponseResponseJSON} The JSON object
    */
-  toJSON(): GetWalletResponseResultJSON {
+  toJSON(): GetWalletResponseResponseJSON {
     return {
       id_token: this.idToken,
       vp_token: this.vpToken,
@@ -83,3 +84,5 @@ export class GetWalletResponseResult {
     };
   }
 }
+
+export type GetWalletResponseResult = MdocVerifyResult;

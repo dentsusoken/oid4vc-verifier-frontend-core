@@ -1,21 +1,10 @@
-import {
-  InitTransactionRequest,
-  InitTransactionResponse,
-} from './InitTransaction.types';
-
-/**
- * Represents a type of InitTransaction return value
- */
-export interface InitTransactionResult {
-  sessionId: string;
-  response: InitTransactionResponse;
-}
+import { InitTransactionResult } from './InitTransaction.types';
 
 /**
  * Represents a function to initialize a transaction
- * @param {InitTransactionRequest} request - The request
+ * @param {Request} request - The request
  * @returns {Promise<InitTransactionResult>} The result
  */
 export interface InitTransaction {
-  (request: InitTransactionRequest): Promise<InitTransactionResult>;
+  (request: Request): Promise<InitTransactionResult>;
 }

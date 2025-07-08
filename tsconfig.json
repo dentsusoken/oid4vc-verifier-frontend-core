@@ -5,7 +5,9 @@
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": ["vite/client", "vitest/globals"],
+    "types": ["vite/client"],
+
+    /* "verbatimModuleSyntax": true, */
 
     /* Bundler mode */
     "moduleResolution": "Bundler",
@@ -19,11 +21,11 @@
 
     /* Linting */
     "strict": true,
+    "strictPropertyInitialization": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["lib"],
-  "exclude": ["**/*.test.ts", "**/*.spec.ts"]
+  "exclude": ["node_modules"]
 }

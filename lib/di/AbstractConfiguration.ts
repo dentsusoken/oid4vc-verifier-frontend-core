@@ -1,23 +1,260 @@
+import {
+  JarMode,
+  PresentationDefinitionMode,
+  PresentationType,
+  ResponseMode,
+} from '../ports/input';
+import { HttpRequestOptions } from '../ports/out/http';
+import {
+  DEFAULT_LOGGER_CONFIG,
+  LoggerConfig,
+  PRODUCTION_LOGGER_CONFIG,
+} from '../ports/out/logging';
 import { Configuration } from './Configuration';
 
 /**
- * Abstract class that implements the Configuration interface
- * @implements {Configuration}
+ * Abstract base implementation of the Configuration interface
+ *
+ * Provides sensible default implementations for most configuration methods
+ * while requiring concrete implementations to specify environment-specific
+ * values for critical settings. This class reduces boilerplate code and
+ * ensures consistent behavior across different deployment environments.
+ *
+ * The class includes:
+ * - **Default implementations** for optional protocol settings and view paths
+ * - **Environment-aware** logger configuration (production vs development)
+ * - **Abstract methods** for URLs and API endpoints that must be environment-specific
+ * - **Configurable defaults** that can be overridden in concrete implementations
+ *
+ * Concrete implementations only need to provide:
+ * - `apiBaseUrl()` - Backend API endpoint
+ * - `publicUrl()` - Frontend application URL
+ * - `walletUrl()` - Wallet application URL
+ * - `initTransactionApiPath()` - API path for transaction initialization
+ * - `walletResponseRedirectPath()` - Callback path for wallet responses
+ *
+ * @example
+ * ```typescript
+ * // Environment-specific implementation
+ * class DevelopmentConfiguration extends AbstractConfiguration {
+ *   apiBaseUrl(): string {
+ *     return 'http://localhost:3001';
+ *   }
+ *
+ *   publicUrl(): string {
+ *     return 'http://localhost:3000';
+ *   }
+ *
+ *   walletUrl(): string {
+ *     return 'http://localhost:3002';
+ *   }
+ *
+ *   initTransactionApiPath(): string {
+ *     return '/api/init-transaction';
+ *   }
+ *
+ *   walletResponseRedirectPath(): string {
+ *     return '/wallet-callback';
+ *   }
+ *
+ *   // Optionally override defaults
+ *   homeViewPath(): string {
+ *     return '/dev-home'; // Override default '/home'
+ *   }
+ * }
+ *
+ * // Usage
+ * const config = new DevelopmentConfiguration();
+ * const logger = createLogger(config.loggerConfig()); // Automatically development config
+ * ```
+ *
+ * @public
  */
 export abstract class AbstractConfiguration implements Configuration {
-  abstract get apiBaseUrl(): string;
-  abstract get initTransactionPath(): string;
-  abstract get getWalletResponsePath(): string;
-  abstract get publicUrl(): string;
-  abstract get walletUrl(): string;
+  // Abstract methods - must be implemented by concrete classes
 
-  get homePath(): string {
+  /**
+   * Base URL of the API endpoint
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the complete base URL for the backend API,
+   * including protocol and any path prefixes.
+   *
+   * @returns Base URL string for API endpoints
+   */
+  abstract apiBaseUrl(): string;
+
+  /**
+   * InitTransaction API path
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the relative path for the transaction initialization
+   * endpoint that will be combined with `apiBaseUrl()`.
+   *
+   * @returns API path string for transaction initialization
+   */
+  abstract initTransactionApiPath(): string;
+
+  /**
+   * Public URL of the verifier application
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the externally accessible URL where users can
+   * access the verification application.
+   *
+   * @returns Public URL string for the verifier application
+   */
+  abstract publicUrl(): string;
+
+  /**
+   * URL of the wallet application
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the base URL of the wallet application that will
+   * handle credential presentation requests.
+   *
+   * @returns Wallet application URL string
+   */
+  abstract walletUrl(): string;
+
+  /**
+   * Path for wallet response redirect
+   *
+   * **Abstract method** - Must be implemented by concrete classes.
+   * Should return the path where the wallet will redirect users
+   * after completing credential presentation.
+   *
+   * @returns Wallet response redirect path string
+   */
+  abstract walletResponseRedirectPath(): string;
+
+  // Default implementations - can be overridden if needed
+
+  /**
+   * Query template for wallet response redirect
+   *
+   * Returns a default template with response code placeholder.
+   * Can be overridden to support more complex query parameter structures.
+   *
+   * @returns Default query template string with response code placeholder
+   */
+  walletResponseRedirectQueryTemplate(): string {
+    return '{RESPONSE_CODE}';
+  }
+
+  /**
+   * Type of presentation to request
+   *
+   * Returns the default presentation type for credential requests.
+   * Override to support different credential formats or presentation types.
+   *
+   * @returns Default presentation type ('vp_token')
+   */
+  tokenType(): PresentationType {
+    return 'vp_token';
+  }
+
+  /**
+   * Logger configuration based on environment
+   *
+   * Automatically selects appropriate logger configuration based on
+   * NODE_ENV environment variable:
+   * - Production: Minimal logging, security-focused
+   * - Development/Other: Verbose logging, debug-friendly
+   *
+   * @returns Environment-appropriate logger configuration
+   */
+  loggerConfig(): LoggerConfig {
+    return process.env.NODE_ENV === 'production'
+      ? PRODUCTION_LOGGER_CONFIG
+      : DEFAULT_LOGGER_CONFIG;
+  }
+
+  /**
+   * Home view path
+   *
+   * Returns the default path for the application's home page.
+   * Override to customize application routing.
+   *
+   * @returns Default home view path ('/home')
+   */
+  homeViewPath(): string {
     return '/home';
   }
-  get initPath(): string {
+
+  /**
+   * InitTransaction view path
+   *
+   * Returns the default path for the transaction initialization page.
+   * Override to customize application routing.
+   *
+   * @returns Default init transaction view path ('/init')
+   */
+  initTransactionViewPath(): string {
     return '/init';
   }
-  get resultPath(): string {
+
+  /**
+   * Result view path
+   *
+   * Returns the default path for displaying verification results.
+   * Override to customize application routing.
+   *
+   * @returns Default result view path ('/result')
+   */
+  resultViewPath(): string {
     return '/result';
+  }
+
+  /**
+   * Optional response mode
+   *
+   * Returns undefined by default, indicating standard response handling.
+   * Override to enable specific response modes for enhanced security
+   * or integration requirements.
+   *
+   * @returns undefined (no specific response mode)
+   */
+  responseMode(): ResponseMode | undefined {
+    return;
+  }
+
+  /**
+   * Optional JAR (JWT-Secured Authorization Request) mode
+   *
+   * Returns undefined by default, disabling JAR functionality.
+   * Override to enable JWT-secured authorization requests for
+   * enhanced security in credential exchanges.
+   *
+   * @returns undefined (JAR disabled)
+   */
+  jarMode(): JarMode | undefined {
+    return;
+  }
+
+  /**
+   * Request options for HTTP requests
+   *
+   * Returns undefined by default, using system defaults for HTTP requests.
+   * Override to set custom timeouts, retry policies, or other
+   * request-level configuration.
+   *
+   * @returns undefined (use default HTTP options)
+   */
+  requestOptions(): Omit<HttpRequestOptions, 'headers'> | undefined {
+    return;
+  }
+
+  /**
+   * Optional presentation definition mode
+   *
+   * Returns undefined by default, using standard presentation definition handling.
+   * Override to enable specific modes for credential schema validation
+   * or presentation requirement processing.
+   *
+   * @returns undefined (standard presentation definition handling)
+   */
+  presentationDefinitionMode(): PresentationDefinitionMode | undefined {
+    return;
   }
 }

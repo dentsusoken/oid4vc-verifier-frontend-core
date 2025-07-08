@@ -4,72 +4,45 @@
   "version": "0.0.0",
   "type": "module",
   "files": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ],
   "main": "./dist/counter.cjs",
   "module": "./dist/counter.js",
   "types": "./index.d.ts",
   "exports": {
-    "adapters.out.http": {
-      "types": "./dist/adapters/out/http/index.d.ts",
-      "import": "./dist/adapters/out/http/index.js",
-      "require": "./dist/adapters/out/http/index.cjs"
-    },
-    "adapters.out.session": {
-      "types": "./dist/adapters/out/session/index.d.ts",
-      "import": "./dist/adapters/out/session/index.js",
-      "require": "./dist/adapters/out/session/index.cjs"
-    },
-    "di": {
-      "types": "./dist/di/index.d.ts",
-      "import": "./dist/di/index.js",
-      "require": "./dist/di/index.cjs"
-    },
-    "services": {
-      "types": "./dist/services/index.d.ts",
-      "import": "./dist/services/index.js",
-      "require": "./dist/services/index.cjs"
-    },
-    "utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
-      "require": "./dist/utils/index.cjs"
-    },
-    "ports.input": {
-      "types": "./dist/ports/input/index.d.ts",
-      "import": "./dist/ports/input/index.js",
-      "require": "./dist/ports/input/index.cjs"
-    },
-    "ports.out.http": {
-      "types": "./dist/ports/out/http/index.d.ts",
-      "import": "./dist/ports/out/http/index.js",
-      "require": "./dist/ports/out/http/index.cjs"
-    },
-    "ports.out.session": {
-      "types": "./dist/ports/out/session/index.d.ts",
-      "import": "./dist/ports/out/session/index.js",
-      "require": "./dist/ports/out/session/index.cjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "scripts": {
-    "build": "vite build && tsc",
-    "test": "vitest run",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint ./dist --ext .ts",
-    "lint:fix": "eslint ./dist --ext .ts --fix"
+    "build": "npm run typecheck && vite build",
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
     "cbor-x": "^1.6.0",
     "qrcode": "^1.5.4",
     "ua-parser-js": "^0.7.39",
     "uuid": "^10.0.0",
-    "zod": "^3.25.67"
+    "vite-plugin-dts": "^4.5.4",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/node": "^24.0.10",
+    "@types/ua-parser-js": "^0.7.39",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.35.1",
+    "eslint": "^9.30.1",
+    "eslint-plugin-sort-keys-fix": "^1.1.2",
     "typescript": "~5.7.3",
     "vite": "^6.1.1",
     "vitest": "^3.1.4"
+  },
+  "peerDependencies": {
+    "@vecrea/oid4vc-core": "^0.1.0",
+    "@vecrea/oid4vc-prex": "^0.1.0"
   }
 }
