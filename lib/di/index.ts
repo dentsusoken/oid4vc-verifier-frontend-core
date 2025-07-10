@@ -76,6 +76,8 @@
  * @see {@link Configuration} - Application configuration interface
  * @see {@link AbstractPortsOut} - Base implementation for output ports
  * @see {@link AbstractConfiguration} - Base implementation for configuration
+ * @see {@link createInitTransactionService} - Service to initialize a transaction
+ * @see {@link PortsInputImpl} - Implementation of the input ports
  *
  * @module DependencyInjection
  * @public
@@ -85,4 +87,5 @@ export * from './AbstractConfiguration';
 export * from './AbstractPortsOut';
 export * from './Configuration';
 export * from './PortsInput';
+export * from './PortsInputImpl';
 export * from './PortsOut';

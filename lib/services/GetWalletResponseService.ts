@@ -1,148 +1,33 @@
-import { PresentationId } from '../domain';
-import { MdocVerifier } from '../ports';
+import { EphemeralECDHPrivateJwk } from '../domain';
 import {
   GetWalletResponse,
   GetWalletResponseResponse,
   GetWalletResponseResponseSchema,
   GetWalletResponseResult,
 } from '../ports/input';
-import { GetRequest } from '../ports/out/http';
-import type { Logger } from '../ports/out/logging';
-import { Session, SessionSchemas } from '../ports/out/session';
-
-/**
- * Custom error class for GetWalletResponse service errors
- *
- * @public
- */
-export class GetWalletResponseServiceError extends Error {
-  constructor(
-    public readonly errorType:
-      | 'MISSING_PRESENTATION_ID'
-      | 'MISSING_VP_TOKEN'
-      | 'API_REQUEST_FAILED'
-      | 'INVALID_RESPONSE'
-      | 'SESSION_ERROR',
-    public readonly details: string,
-    public readonly originalError?: Error
-  ) {
-    super(`GetWalletResponse Service Error (${errorType}): ${details}`);
-    this.name = 'GetWalletResponseServiceError';
-  }
-}
-
-/**
- * Configuration parameters for creating a GetWalletResponse service
- *
- * @public
- */
-export interface CreateGetWalletResponseServiceConfig {
-  /** Base URL of the API endpoint */
-  apiBaseUrl: string;
-
-  /** API path for GetWalletResponse endpoint */
-  apiPath: string;
-
-  /** HTTP GET request function */
-  get: GetRequest;
-
-  /** Session management interface */
-  session: Session<SessionSchemas>;
-
-  /** Logger instance for logging events */
-  logger: Logger;
-
-  /** MDOC verifier instance */
-  mdocVerifier: MdocVerifier;
-}
-
-/**
- * Retrieves presentation ID from session
- *
- * @param session - The session interface
- * @param logger - Logger instance for logging events
- * @returns The presentation ID from session
- * @throws {GetWalletResponseServiceError} When presentation ID is missing
- *
- * @internal
- */
-const getPresentationIdFromSession = async (
-  session: Session<SessionSchemas>,
-  logger: Logger
-): Promise<PresentationId> => {
-  logger.debug(
-    'GetWalletResponseService',
-    'Retrieving presentation ID from session'
-  );
-
-  const presentationId = await session.get('presentationId');
-
-  if (!presentationId) {
-    // Get session keys for debugging
-    let sessionKeys: Array<keyof SessionSchemas> = [];
-    try {
-      sessionKeys = await session.keys();
-    } catch (error) {
-      logger.debug(
-        'GetWalletResponseService',
-        'Failed to retrieve session keys for debugging',
-        {
-          error: {
-            name: error instanceof Error ? error.name : 'Unknown',
-            message: error instanceof Error ? error.message : String(error),
-          },
-        }
-      );
-    }
-
-    logger.logSecurity(
-      'error',
-      'GetWalletResponseService',
-      'Presentation ID not found in session',
-      {
-        context: {
-          sessionKeys: sessionKeys.map(String),
-        },
-      }
-    );
-
-    throw new GetWalletResponseServiceError(
-      'MISSING_PRESENTATION_ID',
-      'Presentation ID not found in session. The session may have expired or the transaction was not properly initialized.'
-    );
-  }
-
-  logger.debug(
-    'GetWalletResponseService',
-    'Presentation ID retrieved successfully',
-    {
-      context: {
-        presentationId: presentationId.toString(),
-      },
-    }
-  );
-
-  return presentationId;
-};
+import { GetWalletResponseServiceError } from './GetWalletResponseService.errors';
+import { getPresentationIdFromSession } from './GetWalletResponseService.helpers';
+import { CreateGetWalletResponseServiceConfig } from './GetWalletResponseService.types';
 
 /**
  * Creates a GetWalletResponse service function
  *
  * This factory function creates a configured GetWalletResponse service that handles
- * the complete flow of retrieving wallet response data from the OID4VC verification API
- * and verifying MDOC credentials. The service manages session validation, API communication,
- * MDOC verification, and returns the verification result.
+ * the complete flow of retrieving wallet response data from the OID4VC verification API,
+ * verifying JARM JWT, and verifying MDOC credentials. The service manages session validation,
+ * API communication, JARM verification, MDOC verification, and returns the verification result.
  *
  * The created service function:
- * 1. Retrieves the presentation ID from the session
+ * 1. Retrieves the presentation ID and ephemeral ECDH private JWK from the session
  * 2. Constructs the API request with optional response code
  * 3. Sends a GET request to the API endpoint
  * 4. Validates and parses the API response
- * 5. Verifies the VP token using the MDOC verifier
- * 6. Returns the MDOC verification result
+ * 5. Verifies the JARM JWT using the ephemeral ECDH private JWK
+ * 6. Verifies the VP token using the MDOC verifier
+ * 7. Returns the MDOC verification result with VP token
  *
  * @param config - Configuration parameters for the service
- * @returns A configured GetWalletResponse function that returns MdocVerifyResult
+ * @returns A configured GetWalletResponse function that returns GetWalletResponseResult
  *
  * @throws {GetWalletResponseServiceError} When configuration validation fails
  *
@@ -157,7 +42,9 @@ const getPresentationIdFromSession = async (
  *   }),
  *   session: sessionImplementation,
  *   logger: loggerImplementation,
- *   mdocVerifier: mdocVerifierImplementation
+ *   mdocVerifier: mdocVerifierImplementation,
+ *   verifyJarmJwt: jarmVerifierImplementation,
+ *   jarmOption: jarmOptionInstance
  * });
  *
  * // Use the service
@@ -165,6 +52,7 @@ const getPresentationIdFromSession = async (
  * if (result.valid) {
  *   console.log('MDOC verification successful');
  *   console.log('Documents:', result.documents);
+ *   console.log('VP Token:', result.vpToken);
  * } else {
  *   console.log('MDOC verification failed');
  * }
@@ -179,14 +67,24 @@ export const createGetWalletResponseService = ({
   session,
   logger,
   mdocVerifier,
+  verifyJarmJwt,
+  jarmOption,
 }: CreateGetWalletResponseServiceConfig): GetWalletResponse => {
   // Validate configuration
-  if (!apiBaseUrl || !apiPath || !mdocVerifier) {
+  if (
+    !apiBaseUrl ||
+    !apiPath ||
+    !mdocVerifier ||
+    !verifyJarmJwt ||
+    !jarmOption
+  ) {
     logger.error('GetWalletResponseService', 'Invalid configuration provided', {
       context: {
         hasApiBaseUrl: !!apiBaseUrl,
         hasApiPath: !!apiPath,
         hasMdocVerifier: !!mdocVerifier,
+        hasVerifyJarmJwt: !!verifyJarmJwt,
+        hasJarmOption: !!jarmOption,
       },
     });
 
@@ -201,6 +99,8 @@ export const createGetWalletResponseService = ({
       apiBaseUrl: apiBaseUrl.substring(0, 50), // Limit for privacy
       apiPath,
       hasMdocVerifier: !!mdocVerifier,
+      hasVerifyJarmJwt: !!verifyJarmJwt,
+      hasJarmOption: !!jarmOption,
     },
   });
 
@@ -302,11 +202,7 @@ export const createGetWalletResponseService = ({
           {
             context: {
               presentationId: presentationId.toString(),
-              hasVpToken: !!walletResponse.vpToken,
-              hasIdToken: !!walletResponse.idToken,
-              hasPresentationSubmission:
-                !!walletResponse.presentationSubmission,
-              hasError: !!walletResponse.error,
+              hasResponse: !!walletResponse.response,
             },
           }
         );
@@ -334,8 +230,45 @@ export const createGetWalletResponseService = ({
         );
       }
 
+      const ephemeralECDHPrivateJwk = await session.get(
+        'ephemeralECDHPrivateJwk'
+      );
+
+      if (!ephemeralECDHPrivateJwk) {
+        logger.error(
+          'GetWalletResponseService',
+          'Ephemeral ECDH private JWK not found in session',
+          {
+            context: {
+              presentationId: presentationId.toString(),
+            },
+          }
+        );
+
+        throw new GetWalletResponseServiceError(
+          'MISSING_EPHEMERAL_ECDH_PRIVATE_JWK',
+          'Ephemeral ECDH private JWK not found in session'
+        );
+      }
+
+      const jarmJwt = await verifyJarmJwt(
+        jarmOption,
+        new EphemeralECDHPrivateJwk(ephemeralECDHPrivateJwk),
+        walletResponse.response
+      );
+
+      if (jarmJwt.isFailure()) {
+        logger.error('GetWalletResponseService', 'JARM verification failed', {
+          context: {
+            presentationId: presentationId.toString(),
+          },
+        });
+      }
+
+      const authorizationResponse = jarmJwt.value;
+
       // Check if VP token is present - required for MDOC verification
-      if (!walletResponse.vpToken) {
+      if (!authorizationResponse?.vpToken) {
         // TODO: Handle cases where VP token is not present
         // Currently treating this as an error, but in the future we may need to:
         // 1. Support ID token only flows
@@ -348,9 +281,9 @@ export const createGetWalletResponseService = ({
           {
             context: {
               presentationId: presentationId.toString(),
-              hasIdToken: !!walletResponse.idToken,
-              hasError: !!walletResponse.error,
-              errorType: walletResponse.error || null,
+              hasIdToken: !!authorizationResponse?.idToken,
+              hasError: !!authorizationResponse?.error,
+              errorType: authorizationResponse?.error || null,
             },
           }
         );
@@ -361,8 +294,8 @@ export const createGetWalletResponseService = ({
           {
             context: {
               presentationId: presentationId.toString(),
-              hasIdToken: !!walletResponse.idToken,
-              walletError: walletResponse.error || null,
+              hasIdToken: !!authorizationResponse?.idToken,
+              walletError: authorizationResponse?.error || null,
             },
           }
         );
@@ -380,14 +313,16 @@ export const createGetWalletResponseService = ({
         {
           context: {
             presentationId: presentationId.toString(),
-            vpTokenLength: walletResponse.vpToken.length,
+            vpTokenLength: authorizationResponse?.vpToken.length,
           },
         }
       );
 
       let mdocVerifyResult;
       try {
-        mdocVerifyResult = await mdocVerifier.verify(walletResponse.vpToken);
+        mdocVerifyResult = await mdocVerifier.verify(
+          authorizationResponse?.vpToken
+        );
 
         if (mdocVerifyResult.valid) {
           logger.info(
@@ -409,7 +344,7 @@ export const createGetWalletResponseService = ({
                 presentationId: presentationId.toString(),
                 documentsCount: mdocVerifyResult.documents.length,
                 documentTypes: mdocVerifyResult.documents
-                  .map((doc) => Object.keys(doc))
+                  .map((doc: Record<string, unknown>) => Object.keys(doc))
                   .flat(),
               },
             }
@@ -422,7 +357,7 @@ export const createGetWalletResponseService = ({
             {
               context: {
                 presentationId: presentationId.toString(),
-                vpTokenLength: walletResponse.vpToken.length,
+                vpTokenLength: authorizationResponse?.vpToken.length,
               },
             }
           );
@@ -442,7 +377,7 @@ export const createGetWalletResponseService = ({
         logger.error('GetWalletResponseService', 'MDOC verification error', {
           context: {
             presentationId: presentationId.toString(),
-            vpTokenLength: walletResponse.vpToken.length,
+            vpTokenLength: authorizationResponse?.vpToken.length,
           },
           error: {
             name: error instanceof Error ? error.name : 'Unknown',
@@ -488,7 +423,7 @@ export const createGetWalletResponseService = ({
       // Return the MDOC verification result
       return {
         ...mdocVerifyResult,
-        vpToken: walletResponse.vpToken,
+        vpToken: authorizationResponse?.vpToken,
       };
     } catch (error) {
       const endTime = performance.now();

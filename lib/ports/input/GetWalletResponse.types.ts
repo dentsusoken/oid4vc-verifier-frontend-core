@@ -1,7 +1,3 @@
-import {
-  PresentationSubmission,
-  presentationSubmissionSchema,
-} from '@vecrea/oid4vc-prex';
 import { z } from 'zod';
 import { MdocVerifyResult } from '../../../../oid4vc-verifier-frontend-hono/build/mdoc-cbor-ts/dist/types/handlers/verify/mdoc';
 
@@ -11,12 +7,16 @@ import { MdocVerifyResult } from '../../../../oid4vc-verifier-frontend-hono/buil
  * @type {z.ZodObject}
  * @throws {z.ZodError} If the GetWalletResponseResponse is invalid
  */
+// export const GetWalletResponseResponseSchema = z.object({
+//   id_token: z.string().optional(),
+//   vp_token: z.string().optional(),
+//   presentation_submission: presentationSubmissionSchema.optional(),
+//   error: z.string().optional(),
+//   error_description: z.string().optional(),
+// });
 export const GetWalletResponseResponseSchema = z.object({
-  id_token: z.string().optional(),
-  vp_token: z.string().optional(),
-  presentation_submission: presentationSubmissionSchema.optional(),
-  error: z.string().optional(),
-  error_description: z.string().optional(),
+  state: z.string(),
+  response: z.string(),
 });
 
 /**
@@ -29,27 +29,18 @@ export type GetWalletResponseResponseJSON = z.infer<
 /**
  * Represents a GetWalletResponseResponse
  * @class
- * @property {string} idToken - The id token
- * @property {string} vpToken - The vp token
- * @property {PresentationSubmission} presentationSubmission - The presentation submission
- * @property {string} error - The error
- * @property {string} error_description - The error description
+ * @property {string} state - The state
+ * @property {string} response - The response
  */
 export class GetWalletResponseResponse {
   /**
    * Creates a new GetWalletResponseResponse
-   * @param {string} idToken - The id token
-   * @param {string} vpToken - The vp token
-   * @param {PresentationSubmission} presentationSubmission - The presentation submission
-   * @param {string} error - The error
-   * @param {string} error_description - The error description
+   * @param {string} state - The state
+   * @param {string} response - The response
    */
   constructor(
-    public readonly idToken?: string,
-    public readonly vpToken?: string,
-    public readonly presentationSubmission?: PresentationSubmission,
-    public readonly error?: string,
-    public readonly error_description?: string
+    public readonly state: string,
+    public readonly response: string
   ) {}
 
   /**
@@ -59,15 +50,7 @@ export class GetWalletResponseResponse {
    */
   static fromJSON(json: unknown): GetWalletResponseResponse {
     const parsed = GetWalletResponseResponseSchema.parse(json);
-    return new GetWalletResponseResponse(
-      parsed.id_token,
-      parsed.vp_token,
-      parsed.presentation_submission
-        ? PresentationSubmission.fromJSON(parsed.presentation_submission)
-        : undefined,
-      parsed.error,
-      parsed.error_description
-    );
+    return new GetWalletResponseResponse(parsed.state, parsed.response);
   }
 
   /**
@@ -76,11 +59,8 @@ export class GetWalletResponseResponse {
    */
   toJSON(): GetWalletResponseResponseJSON {
     return {
-      id_token: this.idToken,
-      vp_token: this.vpToken,
-      presentation_submission: this.presentationSubmission?.toJSON(),
-      error: this.error,
-      error_description: this.error_description,
+      state: this.state,
+      response: this.response,
     };
   }
 }

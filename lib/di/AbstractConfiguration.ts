@@ -1,3 +1,5 @@
+import { parseJarmOption } from '../adapters/out/jose';
+import { JarmOption } from '../domain';
 import { LoggerConfig } from '../ports';
 import {
   JarMode,
@@ -258,4 +260,34 @@ export abstract class AbstractConfiguration implements Configuration {
   presentationDefinitionMode(): PresentationDefinitionMode | undefined {
     return;
   }
+
+  /**
+   * Function to get the signed response algorithm for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationSignedResponseAlg = (): string | undefined => undefined;
+
+  /**
+   * Function to get the encrypted response algorithm for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationEncryptedResponseAlg = (): string | undefined =>
+    'ECDH-ES+A256KW';
+
+  /**
+   * Function to get the encrypted response encryption for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationEncryptedResponseEnc = (): string | undefined => 'A256GCM';
+
+  /**
+   * Function to get the JARM option
+   * @type {() => JarmOption}
+   */
+  jarmOption = (): JarmOption =>
+    parseJarmOption(
+      this.authorizationSignedResponseAlg(),
+      this.authorizationEncryptedResponseAlg(),
+      this.authorizationEncryptedResponseEnc()
+    )!;
 }

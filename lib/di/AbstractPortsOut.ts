@@ -5,6 +5,10 @@ import {
 } from '../adapters/out/cfg';
 import { createDefaultFetcher } from '../adapters/out/http';
 import { defaultIsMobile } from '../adapters/out/http/DefaultIsMobile';
+import {
+  createGenerateEphemeralECDHPrivateJwkJoseInvoker,
+  createVerifyJarmJwtJoseInvoker,
+} from '../adapters/out/jose';
 import { createDefaultLogger } from '../adapters/out/logging';
 import { MdocVerifier } from '../ports';
 import {
@@ -14,6 +18,10 @@ import {
 import { GenerateNonce } from '../ports/out/cfg/GenerateNonce';
 import { Fetcher } from '../ports/out/http';
 import { IsMobile } from '../ports/out/http/isMobile';
+import {
+  GenerateEphemeralECDHPrivateJwk,
+  VerifyJarmJwt,
+} from '../ports/out/jose';
 import { Logger } from '../ports/out/logging';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
@@ -182,4 +190,23 @@ export abstract class AbstractPortsOut implements PortsOut {
    * @returns Session service implementation with schema validation
    */
   abstract session(): Session<SessionSchemas>;
+
+  // jose
+  /**
+   * Returns a function to generate an ephemeral ECDH private key
+   *
+   * @returns GenerateEphemeralECDHPrivateJwk function
+   */
+  generateEphemeralECDHPrivateJwk(): GenerateEphemeralECDHPrivateJwk {
+    return createGenerateEphemeralECDHPrivateJwkJoseInvoker();
+  }
+
+  /**
+   * Returns a function to verify a JARM JWT
+   *
+   * @returns VerifyJarmJwt function
+   */
+  verifyJarmJwt(): VerifyJarmJwt {
+    return createVerifyJarmJwtJoseInvoker();
+  }
 }

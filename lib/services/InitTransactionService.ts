@@ -1,328 +1,33 @@
-import { Nonce, PresentationId } from '../domain';
+import { EphemeralECDHPublicJwk } from '../domain';
 import {
   InitTransaction,
-  InitTransactionRequestJSON,
   InitTransactionResponse,
   initTransactionResponseSchema,
-  JarMode,
-  PresentationDefinitionMode,
-  PresentationType,
-  ResponseMode,
 } from '../ports/input';
+import { InitTransactionServiceError } from './InitTransactionService.errors';
 import {
-  GenerateWalletRedirectUri,
-  GenerateWalletResponseRedirectUriTemplate,
-} from '../ports/out/cfg';
-import { GenerateNonce } from '../ports/out/cfg/GenerateNonce';
-import { PostRequest } from '../ports/out/http';
-import { IsMobile } from '../ports/out/http/isMobile';
-import type { Logger } from '../ports/out/logging';
-import { GeneratePresentationDefinition } from '../ports/out/prex';
-import { Session, SessionSchemas } from '../ports/out/session';
-
-/**
- * Custom error class for InitTransaction service errors
- *
- * @public
- */
-export class InitTransactionServiceError extends Error {
-  constructor(
-    public readonly errorType:
-      | 'MISSING_USER_AGENT'
-      | 'API_REQUEST_FAILED'
-      | 'INVALID_RESPONSE'
-      | 'SESSION_ERROR',
-    public readonly details: string,
-    public readonly originalError?: Error
-  ) {
-    super(`InitTransaction Service Error (${errorType}): ${details}`);
-    this.name = 'InitTransactionServiceError';
-  }
-}
-
-/**
- * Parameters required for generating an InitTransaction request
- *
- * @public
- */
-export interface GenerateRequestParams {
-  /** The public URL of the verifier application */
-  publicUrl: string;
-
-  /** The path for wallet response redirect */
-  walletResponseRedirectPath: string;
-
-  /** The query template for wallet response redirect */
-  walletResponseRedirectQueryTemplate: string;
-
-  /** Whether the request is from a mobile device */
-  isMobile: boolean;
-
-  /** The type of presentation requested */
-  tokenType: PresentationType;
-
-  /** The generated nonce for this transaction */
-  nonce: Nonce;
-
-  /** Function to generate presentation definition */
-  generatePresentationDefinition: GeneratePresentationDefinition;
-
-  /** Optional response mode */
-  responseMode?: ResponseMode;
-
-  /** Optional JAR mode */
-  jarMode?: JarMode;
-
-  /** Optional presentation definition mode */
-  presentationDefinitionMode?: PresentationDefinitionMode;
-
-  /** Function to generate wallet response redirect URI template */
-  generateWalletResponseRedirectUriTemplate: GenerateWalletResponseRedirectUriTemplate;
-}
-
-/**
- * Generates an InitTransaction request object
- *
- * Creates a properly formatted InitTransactionRequestJSON object with all necessary
- * parameters for initializing an OID4VC verification transaction. This function
- * handles the conditional inclusion of wallet response redirect URI template
- * based on whether the request is from a mobile device.
- *
- * @param params - The parameters required for request generation
- * @returns The formatted InitTransactionRequestJSON object
- *
- * @example
- * ```typescript
- * const request = generateRequest({
- *   publicUrl: 'https://verifier.example.com',
- *   walletResponseRedirectPath: '/callback',
- *   walletResponseRedirectQueryTemplate: '{SESSION_ID}',
- *   isMobile: true,
- *   tokenType: 'vp_token',
- *   nonce: 'nonce_123456',
- *   generatePresentationDefinition: () => ({ definition: {} }),
- *   generateWalletResponseRedirectUriTemplate: (url, path, template) => url + path + '?session=' + template
- * });
- * ```
- *
- * @public
- */
-export const generateRequest = ({
-  publicUrl,
-  walletResponseRedirectPath,
-  walletResponseRedirectQueryTemplate,
-  isMobile,
-  tokenType,
-  nonce,
-  generatePresentationDefinition,
-  responseMode,
-  jarMode,
-  presentationDefinitionMode,
-  generateWalletResponseRedirectUriTemplate,
-}: GenerateRequestParams): InitTransactionRequestJSON => {
-  // Validate required parameters
-  if (
-    !publicUrl ||
-    !walletResponseRedirectPath ||
-    !walletResponseRedirectQueryTemplate
-  ) {
-    throw new InitTransactionServiceError(
-      'INVALID_RESPONSE',
-      'Required URL parameters are missing'
-    );
-  }
-
-  return {
-    type: tokenType,
-    presentation_definition: generatePresentationDefinition(),
-    nonce,
-    response_mode: responseMode,
-    jar_mode: jarMode,
-    presentation_definition_mode: presentationDefinitionMode,
-    wallet_response_redirect_uri_template: isMobile
-      ? generateWalletResponseRedirectUriTemplate(
-          publicUrl,
-          walletResponseRedirectPath,
-          walletResponseRedirectQueryTemplate
-        )
-      : undefined,
-  };
-};
-
-/**
- * Configuration parameters for creating an InitTransaction service
- *
- * @public
- */
-export interface CreateInitTransactionServiceConfig {
-  /** Base URL of the API endpoint */
-  apiBaseUrl: string;
-
-  /** API path for InitTransaction endpoint */
-  apiPath: string;
-
-  /** Public URL of the verifier application */
-  publicUrl: string;
-
-  /** URL of the wallet application */
-  walletUrl: string;
-
-  /** Path for wallet response redirect */
-  walletResponseRedirectPath: string;
-
-  /** Query template for wallet response redirect */
-  walletResponseRedirectQueryTemplate: string;
-
-  /** Function to detect mobile devices */
-  isMobile: IsMobile;
-
-  /** Type of presentation to request */
-  tokenType: PresentationType;
-
-  /** Function to generate nonces */
-  generateNonce: GenerateNonce;
-
-  /** Function to generate presentation definitions */
-  generatePresentationDefinition: GeneratePresentationDefinition;
-
-  /** Optional response mode */
-  responseMode?: ResponseMode;
-
-  /** Optional JAR mode */
-  jarMode?: JarMode;
-
-  /** Optional presentation definition mode */
-  presentationDefinitionMode?: PresentationDefinitionMode;
-
-  /** Function to generate wallet response redirect URI templates */
-  generateWalletResponseRedirectUriTemplate: GenerateWalletResponseRedirectUriTemplate;
-
-  /** HTTP POST request function */
-  post: PostRequest;
-
-  /** Session management interface */
-  session: Session<SessionSchemas>;
-
-  /** Function to generate wallet redirect URIs */
-  generateWalletRedirectUri: GenerateWalletRedirectUri;
-
-  /** Logger instance for logging events */
-  logger: Logger;
-}
-
-/**
- * Validates the user agent from the request
- *
- * @param request - The incoming request
- * @param logger - Logger instance for logging events
- * @returns The user agent string
- * @throws {InitTransactionServiceError} When user agent is missing
- *
- * @internal
- */
-const validateUserAgent = (request: Request, logger: Logger): string => {
-  const userAgent = request.headers.get('user-agent');
-
-  if (!userAgent) {
-    logger.logSecurity(
-      'error',
-      'InitTransactionService',
-      'Missing user agent in request',
-      {
-        context: {
-          requestUrl: request.url,
-          headers: Object.fromEntries(request.headers.entries()),
-        },
-      }
-    );
-
-    throw new InitTransactionServiceError(
-      'MISSING_USER_AGENT',
-      'User agent header is required to determine device type'
-    );
-  }
-
-  logger.debug('InitTransactionService', 'User agent validated successfully', {
-    context: { userAgent: userAgent.substring(0, 100) }, // Limit length for privacy
-  });
-
-  return userAgent;
-};
-
-/**
- * Stores transaction data in session
- *
- * @param session - The session interface
- * @param presentationId - The presentation ID to store
- * @param nonce - The nonce to store
- * @param logger - Logger instance for logging events
- * @throws {InitTransactionServiceError} When session operations fail
- *
- * @internal
- */
-const storeTransactionInSession = async (
-  session: Session<SessionSchemas>,
-  presentationId: PresentationId,
-  nonce: Nonce,
-  logger: Logger
-): Promise<void> => {
-  try {
-    logger.debug(
-      'InitTransactionService',
-      'Storing transaction data in session',
-      {
-        context: {
-          presentationId: presentationId.toString(),
-          hasNonce: !!nonce,
-        },
-      }
-    );
-
-    await session.set('presentationId', presentationId);
-    await session.set('nonce', nonce);
-
-    logger.info(
-      'InitTransactionService',
-      'Transaction data stored successfully',
-      {
-        context: { presentationId: presentationId.toString() },
-      }
-    );
-  } catch (error) {
-    logger.error('InitTransactionService', 'Failed to store transaction data', {
-      context: {
-        presentationId: presentationId.toString(),
-      },
-      error: {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-    });
-
-    throw new InitTransactionServiceError(
-      'SESSION_ERROR',
-      'Failed to store transaction data in session',
-      error instanceof Error ? error : new Error(String(error))
-    );
-  }
-};
+  generateRequest,
+  storeTransactionInSession,
+  validateUserAgent,
+} from './InitTransactionService.helpers';
+import { CreateInitTransactionServiceConfig } from './InitTransactionService.types';
 
 /**
  * Creates an InitTransaction service function
  *
  * This factory function creates a configured InitTransaction service that handles
  * the complete flow of initializing an OID4VC verification transaction. The service
- * manages nonce generation, API communication, session storage, and wallet redirect
- * URI generation.
+ * manages ephemeral key generation, nonce generation, API communication, session storage,
+ * and wallet redirect URI generation.
  *
  * The created service function:
  * 1. Extracts and validates the user agent from the request
  * 2. Generates a secure nonce for the transaction
- * 3. Creates and sends an InitTransaction request to the API
- * 4. Processes the API response and creates a response object
- * 5. Stores transaction data in the session
- * 6. Generates a wallet redirect URI for the user
+ * 3. Generates ephemeral ECDH private/public key pair for encrypted communication
+ * 4. Creates and sends an InitTransaction request to the API
+ * 5. Processes the API response and creates a response object
+ * 6. Stores transaction data (including ephemeral private key) in the session
+ * 7. Generates a wallet redirect URI for the user
  *
  * @param config - Configuration parameters for the service
  * @returns A configured InitTransaction function
@@ -345,7 +50,9 @@ const storeTransactionInSession = async (
  *   generateWalletResponseRedirectUriTemplate: (url, path, template) => url + path + '?session=' + template,
  *   post: async (url, path, body, schema) => ({ data: schema.parse(JSON.parse(body)) }),
  *   session: sessionImplementation,
- *   generateWalletRedirectUri: (walletUrl, query) => walletUrl + '?' + new URLSearchParams(query)
+ *   generateWalletRedirectUri: (walletUrl, query) => walletUrl + '?' + new URLSearchParams(query),
+ *   logger: loggerImplementation,
+ *   generateEphemeralECDHPrivateJwk: ephemeralKeyGeneratorImplementation
  * });
  *
  * // Use the service
@@ -374,6 +81,7 @@ export const createInitTransactionService = ({
   generateWalletRedirectUri,
   walletUrl,
   logger,
+  generateEphemeralECDHPrivateJwk,
 }: CreateInitTransactionServiceConfig): InitTransaction => {
   // Validate configuration
   if (!apiBaseUrl || !apiPath || !publicUrl || !walletUrl) {
@@ -433,6 +141,26 @@ export const createInitTransactionService = ({
         }
       );
 
+      const ephemeralECDHPrivateJwk = (await generateEphemeralECDHPrivateJwk())
+        .value!;
+
+      logger.debug(
+        'InitTransactionService',
+        'Generated ephemeral ECDH private JWK',
+        {
+          context: {
+            hasEphemeralECDHPrivateJwk: !!ephemeralECDHPrivateJwk,
+          },
+        }
+      );
+
+      const publicJwk = JSON.parse(ephemeralECDHPrivateJwk.toJSON());
+      delete publicJwk.d;
+
+      const ephemeralECDHPublicJwk = new EphemeralECDHPublicJwk(
+        JSON.stringify(publicJwk)
+      );
+
       // Create InitTransaction request
       logger.debug(
         'InitTransactionService',
@@ -451,6 +179,7 @@ export const createInitTransactionService = ({
         tokenType,
         walletResponseRedirectPath,
         walletResponseRedirectQueryTemplate,
+        ephemeralECDHPublicJwk,
       });
 
       // Send request to API
@@ -547,6 +276,7 @@ export const createInitTransactionService = ({
         session,
         initTransactionResponse.presentationId,
         nonce,
+        ephemeralECDHPrivateJwk,
         logger
       );
 

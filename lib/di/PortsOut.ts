@@ -6,6 +6,10 @@ import {
 import { GenerateNonce } from '../ports/out/cfg/GenerateNonce';
 import { Fetcher } from '../ports/out/http';
 import { IsMobile } from '../ports/out/http/isMobile';
+import {
+  GenerateEphemeralECDHPrivateJwk,
+  VerifyJarmJwt,
+} from '../ports/out/jose';
 import { Logger } from '../ports/out/logging';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
@@ -148,4 +152,20 @@ export interface PortsOut {
    * @returns Session service instance with schema validation
    */
   session(): Session<SessionSchemas>;
+
+  // jose
+  /**
+   * Returns a function to generate an ephemeral ECDH private key
+   *
+   * @returns GenerateEphemeralECDHPrivateJwk function
+   */
+  generateEphemeralECDHPrivateJwk(): GenerateEphemeralECDHPrivateJwk;
+
+  // jose
+  /**
+   * Returns a function to verify a JARM JWT
+   *
+   * @returns VerifyJarmJwt function
+   */
+  verifyJarmJwt(): VerifyJarmJwt;
 }

@@ -3,7 +3,11 @@ import {
   presentationDefinitionSchema,
 } from '@vecrea/oid4vc-prex';
 import { z } from 'zod';
-import { PresentationId, presentationIdSchema } from '../../domain';
+import {
+  EphemeralECDHPublicJwk,
+  PresentationId,
+  presentationIdSchema,
+} from '../../domain';
 
 /**
  * Zod schema for the PresentationType.
@@ -58,6 +62,7 @@ export const InitTransactionRequestSchema = z.object({
   jar_mode: jarModeSchema.optional(),
   presentation_definition_mode: presentationDefinitionModeSchema.optional(),
   wallet_response_redirect_uri_template: z.string().optional(),
+  ephemeral_ecdh_public_jwk: z.string(),
 });
 
 /**
@@ -94,6 +99,7 @@ export type InitTransactionRequestJSON = z.infer<
  * @class
  * @property {PresentationType} type - The type
  * @property {PresentationDefinition} presentationDefinition - The presentation definition
+ * @property {EphemeralECDHPublicJwk} ephemeralECDHPublicJwk - The ephemeral ECDH public JWK
  * @property {string} nonce - The nonce
  * @property {ResponseMode} responseMode - The response mode
  * @property {JarMode} jarMode - The jar mode
@@ -105,6 +111,7 @@ export class InitTransactionRequest {
    * Creates a new InitTransactionRequest
    * @param {PresentationType} type - The type
    * @param {PresentationDefinition} presentationDefinition - The presentation definition
+   * @param {EphemeralECDHPublicJwk} ephemeralECDHPublicJwk - The ephemeral ECDH public JWK
    * @param {string} nonce - The nonce
    * @param {ResponseMode} responseMode - The response mode
    * @param {JarMode} jarMode - The jar mode
@@ -114,6 +121,7 @@ export class InitTransactionRequest {
   constructor(
     public readonly type: PresentationType,
     public readonly presentationDefinition: PresentationDefinition,
+    public readonly ephemeralECDHPublicJwk: EphemeralECDHPublicJwk,
     public readonly nonce?: string,
     public readonly responseMode?: ResponseMode,
     public readonly jarMode?: JarMode,
@@ -131,6 +139,7 @@ export class InitTransactionRequest {
     return new InitTransactionRequest(
       parsed.type,
       PresentationDefinition.fromJSON(parsed.presentation_definition),
+      new EphemeralECDHPublicJwk(parsed.ephemeral_ecdh_public_jwk),
       parsed.nonce,
       parsed.response_mode,
       parsed.jar_mode,
@@ -147,6 +156,7 @@ export class InitTransactionRequest {
     return {
       type: this.type,
       presentation_definition: this.presentationDefinition.toJSON(),
+      ephemeral_ecdh_public_jwk: this.ephemeralECDHPublicJwk.toJSON(),
       nonce: this.nonce,
       response_mode: this.responseMode,
       jar_mode: this.jarMode,
@@ -188,7 +198,7 @@ export type WalletRedirectParams = Omit<
 /**
  * Represents a type of InitTransactionResponse
  * @class
- * @property {string} presentationId - The presentation id
+ * @property {PresentationId} presentationId - The presentation id
  * @property {string} clientId - The client id
  * @property {string} request - The request
  * @property {string} requestUri - The request uri
@@ -196,7 +206,7 @@ export type WalletRedirectParams = Omit<
 export class InitTransactionResponse {
   /**
    * Creates a new InitTransactionResponse
-   * @param {string} presentationId - The presentation id
+   * @param {PresentationId} presentationId - The presentation id
    * @param {string} clientId - The client id
    * @param {string} request - The request
    * @param {string} requestUri - The request uri

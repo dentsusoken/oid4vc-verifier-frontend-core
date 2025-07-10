@@ -1,3 +1,4 @@
+import { JarmOption } from '../domain';
 import {
   JarMode,
   PresentationDefinitionMode,
@@ -219,4 +220,28 @@ export interface Configuration {
    * @returns Logger configuration object with level, security, and format settings
    */
   loggerConfig(): LoggerConfig;
+
+  /**
+   * Function to get the signed response algorithm for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationSignedResponseAlg(): string | undefined;
+
+  /**
+   * Function to get the encrypted response algorithm for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationEncryptedResponseAlg(): string | undefined;
+
+  /**
+   * Function to get the encrypted response encryption for the authorization
+   * @type {() => string | undefined}
+   */
+  authorizationEncryptedResponseEnc(): string | undefined;
+
+  /**
+   * Function to get the JARM option
+   * @type {() => JarmOption}
+   */
+  jarmOption(): JarmOption;
 }

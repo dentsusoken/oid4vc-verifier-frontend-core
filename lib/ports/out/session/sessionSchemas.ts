@@ -1,7 +1,11 @@
 // TODO　コードレビュー
 
 import { z } from 'zod';
-import { nonceSchema, presentationIdSchema } from '../../../domain';
+import {
+  ephemeralECDHPrivateJwkSchema,
+  nonceSchema,
+  presentationIdSchema,
+} from '../../../domain';
 
 /**
  * Zod schema for session data validation
@@ -13,14 +17,16 @@ import { nonceSchema, presentationIdSchema } from '../../../domain';
  * The session schema includes:
  * - **presentationId**: Unique identifier for the verification request
  * - **nonce**: Optional cryptographic nonce for security and replay protection
+ * - **ephemeralECDHPrivateJwk**: Ephemeral ECDH private JWK for encrypted communication
  *
  * ## Session Lifecycle
  *
  * Session data follows this typical lifecycle:
  * 1. **Initialization**: `presentationId` is stored when verification starts
  * 2. **Security Setup**: `nonce` is optionally added for enhanced security
- * 3. **Verification**: Data is retrieved during credential presentation processing
- * 4. **Cleanup**: Session is cleared after successful completion or timeout
+ * 3. **Key Management**: `ephemeralECDHPrivateJwk` is stored for encrypted communications
+ * 4. **Verification**: Data is retrieved during credential presentation processing
+ * 5. **Cleanup**: Session is cleared after successful completion or timeout
  *
  * ## Data Security
  *
@@ -43,7 +49,8 @@ import { nonceSchema, presentationIdSchema } from '../../../domain';
  * // Valid session data
  * const sessionData = {
  *   presentationId: presentationIdSchema.parse('pres-123-abc'),
- *   nonce: nonceSchema.parse('550e8400-e29b-41d4-a716-446655440000')
+ *   nonce: nonceSchema.parse('550e8400-e29b-41d4-a716-446655440000'),
+ *   ephemeralECDHPrivateJwk: ephemeralECDHPrivateJwkSchema.parse(privateJwkData)
  * };
  *
  * // Validate session data
@@ -51,7 +58,8 @@ import { nonceSchema, presentationIdSchema } from '../../../domain';
  *
  * // Minimal session (nonce is optional)
  * const minimalSession = {
- *   presentationId: presentationIdSchema.parse('pres-456-def')
+ *   presentationId: presentationIdSchema.parse('pres-456-def'),
+ *   ephemeralECDHPrivateJwk: ephemeralECDHPrivateJwkSchema.parse(privateJwkData)
  * };
  * const validatedMinimal = sessionSchemas.parse(minimalSession); // OK
  *
@@ -64,6 +72,7 @@ import { nonceSchema, presentationIdSchema } from '../../../domain';
  *
  * @see {@link presentationIdSchema} - Validation schema for presentation identifiers
  * @see {@link nonceSchema} - Validation schema for cryptographic nonces
+ * @see {@link ephemeralECDHPrivateJwkSchema} - Validation schema for ephemeral ECDH private JWKs
  *
  * @public
  */
@@ -89,4 +98,15 @@ export const sessionSchemas = z.object({
    * @see {@link nonceSchema} - Schema definition and validation rules
    */
   nonce: nonceSchema.optional(),
+
+  /**
+   * Ephemeral ECDH private JWK for encrypted communication
+   *
+   * A validated ephemeral ECDH private JWK used for establishing
+   * encrypted communication channels during the verification process.
+   * This field is required for secure key exchange operations.
+   *
+   * @see {@link ephemeralECDHPrivateJwkSchema} - Schema definition and validation rules
+   */
+  ephemeralECDHPrivateJwk: ephemeralECDHPrivateJwkSchema,
 });
