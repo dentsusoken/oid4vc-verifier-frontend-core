@@ -190,11 +190,12 @@ export abstract class AbstractConfiguration implements Configuration {
    *
    * Returns the default path for the transaction initialization page.
    * Override to customize application routing.
+   * @param additionalPath - Additional path to append to the default path
    *
-   * @returns Default init transaction view path ('/init')
+   * @returns Init transaction view path ('/init' or '/init/additionalPath')
    */
-  initTransactionViewPath(): string {
-    return '/init';
+  initTransactionViewPath(additionalPath?: string): string {
+    return `/init${additionalPath ? `/${additionalPath}` : ''}`;
   }
 
   /**
@@ -202,11 +203,12 @@ export abstract class AbstractConfiguration implements Configuration {
    *
    * Returns the default path for displaying verification results.
    * Override to customize application routing.
+   * @param additionalPath - Additional path to append to the default path
    *
-   * @returns Default result view path ('/result')
+   * @returns Result view path ('/result' or '/result/additionalPath')
    */
-  resultViewPath(): string {
-    return '/result';
+  resultViewPath(additionalPath?: string): string {
+    return `/result${additionalPath ? `/${additionalPath}` : ''}`;
   }
 
   /**

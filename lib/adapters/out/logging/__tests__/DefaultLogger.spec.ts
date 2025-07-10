@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   LoggerConfig,
   LogMetadata,
-} from '../../../ports/out/logging/Logger';
+} from '../../../../ports/out/logging/Logger';
 import {
   createDefaultLogger,
   createDevelopmentLogger,
   createLogger,
   createProductionLogger,
   DefaultLogger,
-} from './DefaultLogger';
+} from '../DefaultLogger';
 
 describe('DefaultLogger', () => {
   let originalConsole: Console;
@@ -38,8 +38,8 @@ describe('DefaultLogger', () => {
     vi.clearAllMocks();
   });
 
-  describe('コンストラクタとプロパティ', () => {
-    it('正常系: 設定を受け取りインスタンスを作成する', () => {
+  describe('constructor and properties', () => {
+    it('should create instance with provided configuration', () => {
       const config: LoggerConfig = {
         processLogging: true,
         secretLogging: false,
@@ -54,10 +54,10 @@ describe('DefaultLogger', () => {
       const logger = new DefaultLogger(config);
 
       expect(logger.config).toEqual(config);
-      expect(logger.config).not.toBe(config); // 深いコピーされているか確認
+      expect(logger.config).not.toBe(config); // Verify deep copy
     });
 
-    it('正常系: 設定の変更によってインスタンスは影響を受けない', () => {
+    it('should not be affected by changes to original configuration', () => {
       const config: LoggerConfig = {
         processLogging: true,
         secretLogging: false,
@@ -70,13 +70,13 @@ describe('DefaultLogger', () => {
       };
 
       const logger = new DefaultLogger(config);
-      config.minLevel = 'error'; // 元の設定オブジェクトを変更
+      config.minLevel = 'error'; // Modify original config object
 
-      expect(logger.config.minLevel).toBe('info'); // ロガーの設定は変更されない
+      expect(logger.config.minLevel).toBe('info'); // Logger config remains unchanged
     });
   });
 
-  describe('基本的なログメソッド', () => {
+  describe('basic log methods', () => {
     let logger: DefaultLogger;
 
     beforeEach(() => {
@@ -92,7 +92,7 @@ describe('DefaultLogger', () => {
       });
     });
 
-    it('正常系: debug() が適切なコンソールメソッドを呼び出す', () => {
+    it('should call appropriate console method for debug()', () => {
       logger.debug('TestService', 'Debug message');
 
       expect(mockConsole.debug).toHaveBeenCalledOnce();
@@ -101,7 +101,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: info() が適切なコンソールメソッドを呼び出す', () => {
+    it('should call appropriate console method for info()', () => {
       logger.info('TestService', 'Info message');
 
       expect(mockConsole.info).toHaveBeenCalledOnce();
@@ -110,7 +110,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: warn() が適切なコンソールメソッドを呼び出す', () => {
+    it('should call appropriate console method for warn()', () => {
       logger.warn('TestService', 'Warning message');
 
       expect(mockConsole.warn).toHaveBeenCalledOnce();
@@ -119,7 +119,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: error() が適切なコンソールメソッドを呼び出す', () => {
+    it('should call appropriate console method for error()', () => {
       logger.error('TestService', 'Error message');
 
       expect(mockConsole.error).toHaveBeenCalledOnce();
@@ -128,7 +128,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: fatal() が適切なコンソールメソッドを呼び出す', () => {
+    it('should call appropriate console method for fatal()', () => {
       logger.fatal('TestService', 'Fatal message');
 
       expect(mockConsole.error).toHaveBeenCalledOnce();
@@ -138,7 +138,7 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('メタデータ付きログ', () => {
+  describe('metadata logging', () => {
     let logger: DefaultLogger;
 
     beforeEach(() => {
@@ -154,7 +154,7 @@ describe('DefaultLogger', () => {
       });
     });
 
-    it('正常系: メタデータがJSON形式で含まれる', () => {
+    it('should include metadata in JSON format', () => {
       const metadata: LogMetadata = {
         requestId: 'req-123',
         userId: 'user-456',
@@ -170,7 +170,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: 空のメタデータの場合はメタデータ部分が表示されない', () => {
+    it('should not display metadata section when metadata is empty', () => {
       logger.info('TestService', 'Test message', {});
 
       expect(mockConsole.info).toHaveBeenCalledWith(
@@ -178,7 +178,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: メタデータが無効の場合はメタデータ部分が表示されない', () => {
+    it('should not display metadata section when metadata is disabled', () => {
       const loggerWithoutMetadata = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -203,8 +203,8 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('タイムスタンプ機能', () => {
-    it('正常系: タイムスタンプが有効な場合は含まれる', () => {
+  describe('timestamp functionality', () => {
+    it('should include timestamp when enabled', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -225,7 +225,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: メタデータのタイムスタンプが優先される', () => {
+    it('should prioritize metadata timestamp over generated timestamp', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -249,8 +249,8 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('レベルフィルタリング', () => {
-    it('正常系: 最小レベル以下のログは出力されない', () => {
+  describe('level filtering', () => {
+    it('should not output logs below minimum level', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -273,7 +273,7 @@ describe('DefaultLogger', () => {
       expect(mockConsole.error).toHaveBeenCalledOnce();
     });
 
-    it('正常系: isLevelEnabled() が正しく動作する', () => {
+    it('should correctly implement isLevelEnabled()', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -293,8 +293,8 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('タイプフィルタリング', () => {
-    it('正常系: 無効にされたタイプのログは出力されない', () => {
+  describe('type filtering', () => {
+    it('should not output logs for disabled types', () => {
       const logger = new DefaultLogger({
         processLogging: false,
         secretLogging: false,
@@ -311,10 +311,10 @@ describe('DefaultLogger', () => {
       logger.log('info', 'performance', 'TestService', 'Performance message');
       logger.log('info', 'audit', 'TestService', 'Audit message');
 
-      expect(mockConsole.info).toHaveBeenCalledTimes(2); // security と audit のみ
+      expect(mockConsole.info).toHaveBeenCalledTimes(2); // Only security and audit
     });
 
-    it('正常系: isTypeEnabled() が正しく動作する', () => {
+    it('should correctly implement isTypeEnabled()', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -334,7 +334,7 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('機密情報のサニタイズ', () => {
+  describe('sensitive data sanitization', () => {
     let logger: DefaultLogger;
 
     beforeEach(() => {
@@ -350,13 +350,13 @@ describe('DefaultLogger', () => {
       });
     });
 
-    it('正常系: secretタイプのログは無効時に出力されない', () => {
+    it('should not output secret type logs when disabled', () => {
       logger.log('info', 'secret', 'TestService', 'Secret password: test123');
 
       expect(mockConsole.info).not.toHaveBeenCalled();
     });
 
-    it('正常系: メッセージ内のパスワードがサニタイズされる', () => {
+    it('should sanitize passwords in messages', () => {
       logger.logSecurity(
         'warn',
         'AuthService',
@@ -368,7 +368,7 @@ describe('DefaultLogger', () => {
       );
     });
 
-    it('正常系: メタデータ内の機密情報がサニタイズされる', () => {
+    it('should sanitize sensitive information in metadata', () => {
       const metadata: LogMetadata = {
         context: {
           password: 'secret123',
@@ -386,7 +386,7 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('特殊ログメソッド', () => {
+  describe('specialized log methods', () => {
     let logger: DefaultLogger;
 
     beforeEach(() => {
@@ -402,7 +402,7 @@ describe('DefaultLogger', () => {
       });
     });
 
-    it('正常系: logPerformance() が適切に動作する', () => {
+    it('should correctly implement logPerformance()', () => {
       const metadata: LogMetadata = {
         performance: { duration: 150 },
         context: { operation: 'database query' },
@@ -413,7 +413,7 @@ describe('DefaultLogger', () => {
       expect(mockConsole.info).toHaveBeenCalledOnce();
     });
 
-    it('正常系: logSecurity() が適切に動作する', () => {
+    it('should correctly implement logSecurity()', () => {
       const metadata: LogMetadata = {
         userId: 'user-123',
         context: { ipAddress: '192.168.1.1' },
@@ -429,7 +429,7 @@ describe('DefaultLogger', () => {
       expect(mockConsole.warn).toHaveBeenCalledOnce();
     });
 
-    it('正常系: logAudit() が適切に動作する', () => {
+    it('should correctly implement logAudit()', () => {
       const metadata: LogMetadata = {
         userId: 'user-123',
         requestId: 'req-456',
@@ -442,8 +442,8 @@ describe('DefaultLogger', () => {
     });
   });
 
-  describe('設定の更新', () => {
-    it('正常系: updateConfig() で設定を更新できる', () => {
+  describe('configuration updates', () => {
+    it('should update configuration with updateConfig()', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -459,10 +459,10 @@ describe('DefaultLogger', () => {
 
       expect(logger.config.minLevel).toBe('error');
       expect(logger.config.secretLogging).toBe(true);
-      expect(logger.config.processLogging).toBe(true); // 他の設定は保持
+      expect(logger.config.processLogging).toBe(true); // Other settings preserved
     });
 
-    it('正常系: 設定更新後のフィルタリングが正しく動作する', () => {
+    it('should apply filtering correctly after configuration update', () => {
       const logger = new DefaultLogger({
         processLogging: true,
         secretLogging: false,
@@ -479,13 +479,13 @@ describe('DefaultLogger', () => {
       logger.info('TestService', 'After update');
       logger.error('TestService', 'Error after update');
 
-      expect(mockConsole.info).toHaveBeenCalledTimes(1); // 最初のinfoのみ
-      expect(mockConsole.error).toHaveBeenCalledTimes(1); // 更新後のerror
+      expect(mockConsole.info).toHaveBeenCalledTimes(1); // Only first info
+      expect(mockConsole.error).toHaveBeenCalledTimes(1); // Error after update
     });
   });
 
-  describe('カスタムフォーマッター', () => {
-    it('正常系: カスタムフォーマッターが使用される', () => {
+  describe('custom formatter', () => {
+    it('should use custom formatter when provided', () => {
       const customFormatter = vi
         .fn()
         .mockReturnValue('CUSTOM: formatted message');
@@ -518,7 +518,7 @@ describe('DefaultLogger', () => {
   });
 });
 
-describe('ファクトリー関数', () => {
+describe('factory functions', () => {
   let originalConsole: Console;
   let mockConsole: {
     debug: ReturnType<typeof vi.fn>;
@@ -546,7 +546,7 @@ describe('ファクトリー関数', () => {
   });
 
   describe('createDefaultLogger', () => {
-    it('正常系: 指定した設定でDefaultLoggerを作成する', () => {
+    it('should create DefaultLogger with specified configuration', () => {
       const config: LoggerConfig = {
         processLogging: true,
         secretLogging: true,
@@ -566,7 +566,7 @@ describe('ファクトリー関数', () => {
   });
 
   describe('createProductionLogger', () => {
-    it('正常系: プロダクション用設定でロガーを作成する', () => {
+    it('should create logger with production configuration', () => {
       const logger = createProductionLogger();
 
       expect(logger).toBeInstanceOf(DefaultLogger);
@@ -577,7 +577,7 @@ describe('ファクトリー関数', () => {
   });
 
   describe('createDevelopmentLogger', () => {
-    it('正常系: 開発用設定でロガーを作成する', () => {
+    it('should create logger with development configuration', () => {
       const logger = createDevelopmentLogger();
 
       expect(logger).toBeInstanceOf(DefaultLogger);
@@ -588,7 +588,7 @@ describe('ファクトリー関数', () => {
   });
 
   describe('createLogger', () => {
-    it('正常系: デフォルト設定でロガーを作成する', () => {
+    it('should create logger with default configuration', () => {
       const logger = createLogger();
 
       expect(logger).toBeInstanceOf(DefaultLogger);
@@ -596,7 +596,7 @@ describe('ファクトリー関数', () => {
       expect(logger.config.secretLogging).toBe(false);
     });
 
-    it('正常系: カスタム設定でロガーを作成する', () => {
+    it('should create logger with custom configuration', () => {
       const logger = createLogger({
         minLevel: 'error',
         secretLogging: true,
@@ -605,7 +605,7 @@ describe('ファクトリー関数', () => {
       expect(logger).toBeInstanceOf(DefaultLogger);
       expect(logger.config.minLevel).toBe('error');
       expect(logger.config.secretLogging).toBe(true);
-      expect(logger.config.processLogging).toBe(true); // デフォルト値が保持される
+      expect(logger.config.processLogging).toBe(true); // Default value preserved
     });
   });
 });

@@ -112,7 +112,7 @@ export interface Configuration {
    *
    * @returns View path string (e.g., '/init', '/start-verification')
    */
-  initTransactionViewPath(): string;
+  initTransactionViewPath(additionalPath?: string): string;
 
   /**
    * Result view path

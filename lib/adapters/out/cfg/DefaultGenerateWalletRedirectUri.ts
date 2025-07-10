@@ -66,6 +66,9 @@ export const defaultGenerateWalletRedirectUri: GenerateWalletRedirectUri = (
   query
 ) => {
   const url = new URL(redirectUri);
+  if (!query.request && !query.request_uri) {
+    throw new Error('request or request_uri is required');
+  }
   if (!query.request) {
     delete query.request;
   }

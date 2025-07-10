@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
@@ -25,6 +26,21 @@ export default defineConfig({
         }
         warn(warning);
       },
+    },
+  },
+  test: {
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['lib/**/*.ts'],
+      exclude: [
+        'node_modules/',
+        'dist/',
+        'lib/**/index.ts',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+      ],
     },
   },
 });
