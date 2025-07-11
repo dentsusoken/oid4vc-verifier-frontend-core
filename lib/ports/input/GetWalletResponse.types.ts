@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MdocVerifyResult } from '../../../../oid4vc-verifier-frontend-hono/build/mdoc-cbor-ts/dist/types/handlers/verify/mdoc';
+import { MdocVerifyResult } from 'mdoc-cbor-ts';
 
 /**
  * Zod schema for the GetWalletResponseResponse.

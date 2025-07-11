@@ -20,7 +20,7 @@ describe('Nonce', () => {
         ['   nonce-with-spaces   ', 'nonce with surrounding spaces'],
         ['special!@#$%nonce', 'nonce with special characters'],
         ['ñóñçé123', 'nonce with Unicode characters'],
-      ])('should validate %s (%s)', (validNonce, description) => {
+      ])('should validate %s (%s)', (validNonce, _) => {
         expect(() => nonceSchema.parse(validNonce)).not.toThrow();
 
         const result = nonceSchema.parse(validNonce);
@@ -41,7 +41,7 @@ describe('Nonce', () => {
         [Symbol('nonce'), 'symbol'],
         [new Date(), 'date object'],
         [Buffer.from('nonce'), 'buffer object'],
-      ])('should reject %s (%s)', (invalidInput, description) => {
+      ])('should reject %s (%s)', (invalidInput, _) => {
         expect(() => nonceSchema.parse(invalidInput)).toThrow(z.ZodError);
       });
     });

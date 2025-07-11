@@ -18,7 +18,7 @@ describe('PresentationId', () => {
           'long string',
         ],
         ['UUID-like-f47ac10b-58cc-4372-a567-0e02b2c3d479', 'UUID-like format'],
-      ])('should validate %s (%s)', (validId, description) => {
+      ])('should validate %s (%s)', (validId, _) => {
         expect(() => presentationIdSchema.parse(validId)).not.toThrow();
 
         const result = presentationIdSchema.parse(validId);
@@ -38,7 +38,7 @@ describe('PresentationId', () => {
         [false, 'boolean false'],
         [Symbol('test'), 'symbol'],
         [new Date(), 'date object'],
-      ])('should reject %s (%s)', (invalidInput, description) => {
+      ])('should reject %s (%s)', (invalidInput, _) => {
         expect(() => presentationIdSchema.parse(invalidInput)).toThrow(
           z.ZodError
         );

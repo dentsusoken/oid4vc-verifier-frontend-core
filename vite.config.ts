@@ -17,6 +17,7 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
+      external: ['mdoc-cbor-ts'],
       onwarn(warning, warn) {
         if (
           warning.code === 'CIRCULAR_DEPENDENCY' &&
