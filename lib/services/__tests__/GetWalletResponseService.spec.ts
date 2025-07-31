@@ -154,7 +154,7 @@ describe('GetWalletResponseService', () => {
         mockMdocVerifier.verify.mockResolvedValue(mockMdocResult);
 
         // Execute service
-        const result = await service();
+        const result = await service(new Request('https://example.com'));
 
         // Verify API call
         expect(mockGet).toHaveBeenCalledWith(
@@ -206,7 +206,9 @@ describe('GetWalletResponseService', () => {
         mockMdocVerifier.verify.mockResolvedValue(mockMdocResult);
 
         // Execute service with response code
-        const result = await service('test-response-code');
+        const result = await service(
+          new Request('https://example.com?response_code=test-response-code')
+        );
 
         // Verify API call with query parameters
         expect(mockGet).toHaveBeenCalledWith(
@@ -228,10 +230,12 @@ describe('GetWalletResponseService', () => {
         const apiError = new Error('Network error');
         mockGet.mockRejectedValue(apiError);
 
-        await expect(service()).rejects.toThrow(GetWalletResponseServiceError);
-        await expect(service()).rejects.toThrow(
-          'Failed to communicate with GetWalletResponse API'
-        );
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow(GetWalletResponseServiceError);
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow('Failed to communicate with GetWalletResponse API');
       });
 
       it('should throw error when VP token is missing', async () => {
@@ -258,10 +262,12 @@ describe('GetWalletResponseService', () => {
           value: mockAuthResponse,
         });
 
-        await expect(service()).rejects.toThrow(GetWalletResponseServiceError);
-        await expect(service()).rejects.toThrow(
-          'VP token is required for MDOC verification'
-        );
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow(GetWalletResponseServiceError);
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow('VP token is required for MDOC verification');
       });
 
       it('should throw error when ephemeral ECDH private JWK is missing from session', async () => {
@@ -288,10 +294,12 @@ describe('GetWalletResponseService', () => {
         };
         mockGet.mockResolvedValue(mockApiResponse);
 
-        await expect(service()).rejects.toThrow(GetWalletResponseServiceError);
-        await expect(service()).rejects.toThrow(
-          'Ephemeral ECDH private JWK not found in session'
-        );
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow(GetWalletResponseServiceError);
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow('Ephemeral ECDH private JWK not found in session');
       });
 
       it('should handle MDOC verification failure', async () => {
@@ -325,7 +333,7 @@ describe('GetWalletResponseService', () => {
         mockMdocVerifier.verify.mockResolvedValue(mockMdocResult);
 
         // Execute service
-        const result = await service();
+        const result = await service(new Request('https://example.com'));
 
         // Should return the failed result
         expect(result).toEqual({
@@ -362,10 +370,12 @@ describe('GetWalletResponseService', () => {
         const verificationError = new Error('MDOC verification error');
         mockMdocVerifier.verify.mockRejectedValue(verificationError);
 
-        await expect(service()).rejects.toThrow(GetWalletResponseServiceError);
-        await expect(service()).rejects.toThrow(
-          'MDOC verification failed due to technical error'
-        );
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow(GetWalletResponseServiceError);
+        await expect(
+          service(new Request('https://example.com'))
+        ).rejects.toThrow('MDOC verification failed due to technical error');
       });
     });
   });

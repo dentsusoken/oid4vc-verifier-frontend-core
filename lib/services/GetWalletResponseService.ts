@@ -82,11 +82,12 @@ export const createGetWalletResponseService = ({
     );
   }
 
-  return async (responseCode?: string): Promise<GetWalletResponseResult> => {
+  return async (request: Request): Promise<GetWalletResponseResult> => {
     try {
       // Retrieve presentation ID from session
       const presentationId = await getPresentationIdFromSession(session);
-
+      const requestUrl = new URL(request.url);
+      const responseCode = requestUrl.searchParams.get('response_code');
       // Prepare query parameters
       const queryParams: Record<string, string> = responseCode
         ? { response_code: responseCode }
