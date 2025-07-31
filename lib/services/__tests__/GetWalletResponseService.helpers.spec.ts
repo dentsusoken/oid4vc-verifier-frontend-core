@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MockConfiguration } from '../../di/McokConfiguration';
 import { MockPortsOut } from '../../di/McokPortsOut';
 import { PresentationId } from '../../domain';
 import { GetWalletResponseServiceError } from '../GetWalletResponseService.errors';
@@ -9,16 +8,13 @@ import { getPresentationIdFromSession } from '../GetWalletResponseService.helper
  * Test suite for GetWalletResponseService.helpers
  */
 describe('GetWalletResponseService.helpers', () => {
-  let mockConfig: MockConfiguration;
   let mockPortsOut: MockPortsOut;
   let mockSession: any;
-  let mockLogger: any;
 
   const mockPresentationId = 'test-presentation-id-123' as PresentationId;
 
   beforeEach(() => {
-    mockConfig = new MockConfiguration();
-    mockPortsOut = new MockPortsOut(mockConfig);
+    mockPortsOut = new MockPortsOut();
     mockSession = mockPortsOut.session();
 
     // Reset mocks

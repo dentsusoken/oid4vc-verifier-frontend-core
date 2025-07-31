@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AbstractPortsOut } from '../AbstractPortsOut';
-import { MockConfiguration } from '../McokConfiguration';
 import { MockPortsOut } from '../McokPortsOut';
 
 /**
@@ -8,11 +7,9 @@ import { MockPortsOut } from '../McokPortsOut';
  */
 describe('MockPortsOut', () => {
   let mockPortsOut: MockPortsOut;
-  let mockConfig: MockConfiguration;
 
   beforeEach(() => {
-    mockConfig = new MockConfiguration();
-    mockPortsOut = new MockPortsOut(mockConfig);
+    mockPortsOut = new MockPortsOut();
   });
 
   describe('Class Structure', () => {
@@ -172,15 +169,9 @@ describe('MockPortsOut', () => {
     });
   });
 
-  describe('Integration with Configuration', () => {
-    it('should use injected configuration', () => {
-      expect(mockConfig).toBeDefined();
-    });
-  });
-
   describe('Test Utility Validation', () => {
     it('should provide consistent behavior across multiple instantiations', () => {
-      const mockPortsOut2 = new MockPortsOut(mockConfig);
+      const mockPortsOut2 = new MockPortsOut();
 
       const generator1 = mockPortsOut.generatePresentationDefinition();
       const generator2 = mockPortsOut2.generatePresentationDefinition();

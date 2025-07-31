@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MockConfiguration } from '../../di/McokConfiguration';
 import { MockPortsOut } from '../../di/McokPortsOut';
 import {
   EphemeralECDHPrivateJwk,
@@ -18,7 +17,6 @@ import {
  * Test suite for InitTransactionService.helpers
  */
 describe('InitTransactionService.helpers', () => {
-  let mockConfig: MockConfiguration;
   let mockPortsOut: MockPortsOut;
 
   const mockPresentationId = 'test-presentation-id-123' as PresentationId;
@@ -42,8 +40,7 @@ describe('InitTransactionService.helpers', () => {
   );
 
   beforeEach(() => {
-    mockConfig = new MockConfiguration();
-    mockPortsOut = new MockPortsOut(mockConfig);
+    mockPortsOut = new MockPortsOut();
 
     // Reset mocks
     vi.clearAllMocks();

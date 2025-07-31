@@ -23,7 +23,6 @@ import {
 } from '../ports/out/jose';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
-import { Configuration } from './Configuration';
 import { PortsOut } from './PortsOut';
 
 /**
@@ -65,21 +64,6 @@ import { PortsOut } from './PortsOut';
  * @public
  */
 export abstract class AbstractPortsOut implements PortsOut {
-  /**
-   * Configuration instance injected during construction
-   * @private
-   */
-  #config: Configuration;
-
-  /**
-   * Creates a new AbstractPortsOut instance
-   *
-   * @param config - Configuration instance providing environment-specific settings
-   */
-  constructor(config: Configuration) {
-    this.#config = config;
-  }
-
   // cfg
   /**
    * Returns the default nonce generation function
