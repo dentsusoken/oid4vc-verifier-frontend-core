@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { HttpRequestOptions, HttpResponse, HttpRequestBody } from './types';
+import { HttpRequestBody, HttpRequestOptions, HttpResponse } from './types';
 
 /**
  * HTTP POST request interface
  *
  * Provides type-safe POST request functionality with automatic response validation
  * using Zod schemas. Supports various body types and configurable options including
- * headers, timeout, abort signals, and logging for debugging.
+ * headers, timeout, abort signals.
  *
  * @example
  * ```typescript
@@ -22,16 +22,6 @@ import { HttpRequestOptions, HttpResponse, HttpRequestBody } from './types';
  *   createUserSchema
  * );
  *
- * // String body with options including logging
- * const response = await post('/api/data',
- *   JSON.stringify(data),
- *   responseSchema,
- *   {
- *     headers: { 'Content-Type': 'application/json' },
- *     timeout: 10000,
- *     enableLogging: process.env.NODE_ENV !== 'production'
- *   }
- * );
  * ```
  *
  * @public
@@ -58,7 +48,6 @@ export interface PostRequest {
    *     { name: 'John', email: 'john@example.com' },
    *     responseSchema,
    *     {
-   *       enableLogging: true, // Enable detailed logging
    *       timeout: 10000
    *     }
    *   );

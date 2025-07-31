@@ -6,7 +6,6 @@ import {
   ResponseMode,
 } from '../ports/input';
 import { HttpRequestOptions } from '../ports/out/http';
-import { LoggerConfig } from '../ports/out/logging';
 
 /**
  * Configuration interface for the OID4VC verification system
@@ -20,7 +19,7 @@ import { LoggerConfig } from '../ports/out/logging';
  * - **Application URLs**: Public URLs and view paths for the frontend
  * - **Wallet Integration**: Wallet URLs, redirect paths, and response handling
  * - **Protocol Settings**: OAuth/OpenID Connect protocol configuration
- * - **System Configuration**: Logging, request options, and operational settings
+ * - **System Configuration**: request options, and operational settings
  *
  * Implementations should provide environment-specific values while maintaining
  * type safety and validation. The interface supports both required settings
@@ -48,7 +47,6 @@ import { LoggerConfig } from '../ports/out/logging';
  * // Usage in application
  * const config: Configuration = new ProductionConfiguration();
  * const apiUrl = config.apiBaseUrl();
- * const logger = createLogger(config.loggerConfig());
  * ```
  *
  * @public
@@ -209,17 +207,6 @@ export interface Configuration {
    * @returns HTTP request options without headers, or undefined for defaults
    */
   requestOptions(): Omit<HttpRequestOptions, 'headers'> | undefined;
-
-  /**
-   * Logger configuration
-   *
-   * Configuration object specifying logging behavior including log levels,
-   * output formats, security settings, and environment-specific options.
-   * Used to initialize the application's logging system.
-   *
-   * @returns Logger configuration object with level, security, and format settings
-   */
-  loggerConfig(): LoggerConfig;
 
   /**
    * Function to get the signed response algorithm for the authorization

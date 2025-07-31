@@ -20,7 +20,6 @@ import {
 describe('InitTransactionService.helpers', () => {
   let mockConfig: MockConfiguration;
   let mockPortsOut: MockPortsOut;
-  let mockLogger: any;
 
   const mockPresentationId = 'test-presentation-id-123' as PresentationId;
   const mockNonce = 'test-nonce-456' as Nonce;
@@ -45,14 +44,6 @@ describe('InitTransactionService.helpers', () => {
   beforeEach(() => {
     mockConfig = new MockConfiguration();
     mockPortsOut = new MockPortsOut(mockConfig);
-
-    mockLogger = {
-      debug: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-      warn: vi.fn(),
-      logSecurity: vi.fn(),
-    };
 
     // Reset mocks
     vi.clearAllMocks();
@@ -262,20 +253,11 @@ describe('InitTransactionService.helpers', () => {
         });
 
         // Act
-        const result = validateUserAgent(request, mockLogger);
+        const result = validateUserAgent(request);
 
         // Assert
         expect(result).toBe(
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'User agent validated successfully',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              userAgent: expect.stringContaining('Mozilla/5.0'),
-            }),
-          })
         );
       });
 
@@ -287,19 +269,10 @@ describe('InitTransactionService.helpers', () => {
         });
 
         // Act
-        const result = validateUserAgent(request, mockLogger);
+        const result = validateUserAgent(request);
 
         // Assert
         expect(result).toBe(longUserAgent);
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'User agent validated successfully',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              userAgent: longUserAgent.substring(0, 100),
-            }),
-          })
-        );
       });
     });
 
@@ -309,13 +282,13 @@ describe('InitTransactionService.helpers', () => {
         const request = new Request('https://test.com');
 
         // Act & Assert
-        expect(() => validateUserAgent(request, mockLogger)).toThrow(
+        expect(() => validateUserAgent(request)).toThrow(
           InitTransactionServiceError
         );
 
         const error = (() => {
           try {
-            validateUserAgent(request, mockLogger);
+            validateUserAgent(request);
           } catch (e) {
             return e as InitTransactionServiceError;
           }
@@ -332,19 +305,7 @@ describe('InitTransactionService.helpers', () => {
         const request = new Request('https://test.com/test-path');
 
         // Act & Assert
-        expect(() => validateUserAgent(request, mockLogger)).toThrow();
-
-        expect(mockLogger.logSecurity).toHaveBeenCalledWith(
-          'error',
-          'InitTransactionService',
-          'Missing user agent in request',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              requestUrl: 'https://test.com/test-path',
-              headers: expect.any(Object),
-            }),
-          })
-        );
+        expect(() => validateUserAgent(request)).toThrow();
       });
     });
   });
@@ -364,8 +325,7 @@ describe('InitTransactionService.helpers', () => {
           mockSession,
           mockPresentationId,
           mockNonce,
-          mockEphemeralPrivateJwk,
-          mockLogger
+          mockEphemeralPrivateJwk
         );
 
         // Assert
@@ -379,27 +339,6 @@ describe('InitTransactionService.helpers', () => {
           'ephemeralECDHPrivateJwk',
           mockEphemeralPrivateJwk.toJSON()
         );
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Storing transaction data in session',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              presentationId: mockPresentationId.toString(),
-              hasNonce: true,
-            }),
-          })
-        );
-
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Transaction data stored successfully',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              presentationId: mockPresentationId.toString(),
-            }),
-          })
-        );
       });
 
       it('should work with MockPortsOut session', async () => {
@@ -412,8 +351,7 @@ describe('InitTransactionService.helpers', () => {
           session,
           mockPresentationId,
           mockNonce,
-          mockEphemeralPrivateJwk,
-          mockLogger
+          mockEphemeralPrivateJwk
         );
 
         // Assert
@@ -433,8 +371,7 @@ describe('InitTransactionService.helpers', () => {
             mockSession,
             mockPresentationId,
             mockNonce,
-            mockEphemeralPrivateJwk,
-            mockLogger
+            mockEphemeralPrivateJwk
           )
         ).rejects.toThrow(InitTransactionServiceError);
 
@@ -442,8 +379,7 @@ describe('InitTransactionService.helpers', () => {
           mockSession,
           mockPresentationId,
           mockNonce,
-          mockEphemeralPrivateJwk,
-          mockLogger
+          mockEphemeralPrivateJwk
         ).catch((e) => e as InitTransactionServiceError);
 
         expect(error?.errorType).toBe('SESSION_ERROR');
@@ -451,84 +387,6 @@ describe('InitTransactionService.helpers', () => {
           'Failed to store transaction data in session'
         );
         expect(error?.originalError).toBe(sessionError);
-      });
-
-      it('should handle non-Error objects in session failure', async () => {
-        // Arrange
-        vi.spyOn(mockSession, 'set').mockRejectedValue('String error');
-
-        // Act & Assert
-        await expect(
-          storeTransactionInSession(
-            mockSession,
-            mockPresentationId,
-            mockNonce,
-            mockEphemeralPrivateJwk,
-            mockLogger
-          )
-        ).rejects.toThrow(InitTransactionServiceError);
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Failed to store transaction data',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Unknown',
-              message: 'String error',
-            }),
-          })
-        );
-      });
-
-      it('should log error details when storage fails', async () => {
-        // Arrange
-        const sessionError = new Error('Storage failed');
-        sessionError.stack = 'Error stack trace';
-        vi.spyOn(mockSession, 'set').mockRejectedValue(sessionError);
-
-        // Act & Assert
-        await expect(
-          storeTransactionInSession(
-            mockSession,
-            mockPresentationId,
-            mockNonce,
-            mockEphemeralPrivateJwk,
-            mockLogger
-          )
-        ).rejects.toThrow();
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Failed to store transaction data',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              presentationId: mockPresentationId.toString(),
-            }),
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'Storage failed',
-              stack: 'Error stack trace',
-            }),
-          })
-        );
-      });
-    });
-
-    describe('Logging verification', () => {
-      it('should log all expected messages during successful storage', async () => {
-        // Act
-        await storeTransactionInSession(
-          mockSession,
-          mockPresentationId,
-          mockNonce,
-          mockEphemeralPrivateJwk,
-          mockLogger
-        );
-
-        // Assert
-        expect(mockLogger.debug).toHaveBeenCalledTimes(1);
-        expect(mockLogger.info).toHaveBeenCalledTimes(1);
-        expect(mockLogger.error).not.toHaveBeenCalled();
       });
     });
   });

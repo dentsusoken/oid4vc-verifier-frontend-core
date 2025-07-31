@@ -9,7 +9,6 @@ import {
   createGenerateEphemeralECDHPrivateJwkJoseInvoker,
   createVerifyJarmJwtJoseInvoker,
 } from '../adapters/out/jose';
-import { createDefaultLogger } from '../adapters/out/logging';
 import { MdocVerifier } from '../ports';
 import {
   GenerateWalletRedirectUri,
@@ -22,7 +21,6 @@ import {
   GenerateEphemeralECDHPrivateJwk,
   VerifyJarmJwt,
 } from '../ports/out/jose';
-import { Logger } from '../ports/out/logging';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
 import { Configuration } from './Configuration';
@@ -37,7 +35,7 @@ import { PortsOut } from './PortsOut';
  * providing sensible defaults and reducing boilerplate code.
  *
  * The class includes:
- * - **Default implementations** for configuration, HTTP, and logging ports
+ * - **Default implementations** for configuration and HTTP ports
  * - **Abstract methods** for presentation exchange and session management
  * - **Configuration injection** for environment-specific settings
  * - **Type safety** through TypeScript's type system
@@ -62,7 +60,6 @@ import { PortsOut } from './PortsOut';
  * // Usage
  * const config = new ProductionConfiguration();
  * const portsOut = new ProductionPortsOut(config);
- * const logger = portsOut.logger(); // Uses default implementation
  * ```
  *
  * @public
@@ -143,20 +140,6 @@ export abstract class AbstractPortsOut implements PortsOut {
    */
   isMobile(): IsMobile {
     return defaultIsMobile;
-  }
-
-  // logging
-  /**
-   * Returns a configured logger instance
-   *
-   * Creates a logger with environment-specific configuration,
-   * including log levels, security settings, and output formatting.
-   * Uses the configuration's logger settings for production vs development.
-   *
-   * @returns Logger instance configured for current environment
-   */
-  logger(): Logger {
-    return createDefaultLogger(this.#config.loggerConfig());
   }
 
   // prex

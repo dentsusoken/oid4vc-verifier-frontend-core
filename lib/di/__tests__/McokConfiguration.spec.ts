@@ -28,7 +28,6 @@ describe('MockConfiguration', () => {
       expect(typeof mockConfig.publicUrl).toBe('function');
       expect(typeof mockConfig.walletUrl).toBe('function');
       expect(typeof mockConfig.walletResponseRedirectPath).toBe('function');
-      expect(typeof mockConfig.loggerConfig).toBe('function');
     });
   });
 
@@ -79,52 +78,6 @@ describe('MockConfiguration', () => {
       expect(publicUrl).toMatch(/^https:\/\//);
       expect(walletUrl).toMatch(/^https:\/\//);
       expect(redirectPath).toMatch(/^\//);
-    });
-  });
-
-  describe('Logger Configuration', () => {
-    it('should return valid logger configuration', () => {
-      const loggerConfig = mockConfig.loggerConfig();
-
-      expect(loggerConfig).toBeDefined();
-      expect(typeof loggerConfig).toBe('object');
-    });
-
-    it('should have correct logger configuration structure', () => {
-      const loggerConfig = mockConfig.loggerConfig();
-
-      expect(loggerConfig).toHaveProperty('minLevel');
-      expect(loggerConfig).toHaveProperty('processLogging');
-      expect(loggerConfig).toHaveProperty('secretLogging');
-      expect(loggerConfig).toHaveProperty('securityLogging');
-      expect(loggerConfig).toHaveProperty('performanceLogging');
-      expect(loggerConfig).toHaveProperty('auditLogging');
-      expect(loggerConfig).toHaveProperty('includeTimestamp');
-      expect(loggerConfig).toHaveProperty('includeMetadata');
-    });
-
-    it('should have correct logger configuration values', () => {
-      const loggerConfig = mockConfig.loggerConfig();
-
-      expect(loggerConfig.minLevel).toBe('info');
-      expect(loggerConfig.processLogging).toBe(true);
-      expect(loggerConfig.secretLogging).toBe(false);
-      expect(loggerConfig.securityLogging).toBe(true);
-      expect(loggerConfig.performanceLogging).toBe(false);
-      expect(loggerConfig.auditLogging).toBe(true);
-      expect(loggerConfig.includeTimestamp).toBe(true);
-      expect(loggerConfig.includeMetadata).toBe(false);
-    });
-
-    it('should have appropriate security settings for testing', () => {
-      const loggerConfig = mockConfig.loggerConfig();
-
-      // Secret logging should be disabled for security
-      expect(loggerConfig.secretLogging).toBe(false);
-      // Security logging should be enabled for testing
-      expect(loggerConfig.securityLogging).toBe(true);
-      // Audit logging should be enabled for testing
-      expect(loggerConfig.auditLogging).toBe(true);
     });
   });
 
@@ -189,14 +142,6 @@ describe('MockConfiguration', () => {
         'wallet-response'
       );
     });
-
-    it('should be suitable for testing scenarios', () => {
-      // Logger should be configured for testing visibility
-      const loggerConfig = mockConfig.loggerConfig();
-      expect(loggerConfig.minLevel).toBe('info'); // Visible for test debugging
-      expect(loggerConfig.includeTimestamp).toBe(true); // Useful for test tracing
-      expect(loggerConfig.secretLogging).toBe(false); // Secure for tests
-    });
   });
 
   describe('Integration with Dependency Injection', () => {
@@ -204,7 +149,6 @@ describe('MockConfiguration', () => {
       // Mock configuration should satisfy Configuration interface
       expect(mockConfig.apiBaseUrl()).toBeDefined();
       expect(mockConfig.publicUrl()).toBeDefined();
-      expect(mockConfig.loggerConfig()).toBeDefined();
     });
 
     it('should provide all required configuration methods for services', () => {
@@ -216,7 +160,6 @@ describe('MockConfiguration', () => {
         'publicUrl',
         'walletUrl',
         'walletResponseRedirectPath',
-        'loggerConfig',
         'tokenType',
         'jarmOption',
       ];

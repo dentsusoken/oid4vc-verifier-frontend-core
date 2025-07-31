@@ -44,7 +44,7 @@ export class DefaultFetcherError extends Error implements HttpError {
  *
  * Provides a production-ready implementation of the Fetcher interface using
  * the standard fetch API. Includes comprehensive error handling, timeout support,
- * request/response logging, and automatic JSON parsing with Zod validation.
+ * and automatic JSON parsing with Zod validation.
  *
  * Features:
  * - Automatic JSON serialization/deserialization
@@ -52,7 +52,6 @@ export class DefaultFetcherError extends Error implements HttpError {
  * - Configurable timeout support
  * - AbortController integration
  * - Comprehensive error handling
- * - Request/response logging
  * - Custom headers support
  * - Query parameter handling
  *

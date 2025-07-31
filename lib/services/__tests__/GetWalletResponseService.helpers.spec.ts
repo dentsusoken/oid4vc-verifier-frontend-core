@@ -21,14 +21,6 @@ describe('GetWalletResponseService.helpers', () => {
     mockPortsOut = new MockPortsOut(mockConfig);
     mockSession = mockPortsOut.session();
 
-    mockLogger = {
-      debug: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-      warn: vi.fn(),
-      logSecurity: vi.fn(),
-    };
-
     // Reset mocks
     vi.clearAllMocks();
   });
@@ -40,27 +32,11 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(mockSession, 'get').mockResolvedValue(mockPresentationId);
 
         // Act
-        const result = await getPresentationIdFromSession(
-          mockSession,
-          mockLogger
-        );
+        const result = await getPresentationIdFromSession(mockSession);
 
         // Assert
         expect(result).toBe(mockPresentationId);
         expect(mockSession.get).toHaveBeenCalledWith('presentationId');
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'GetWalletResponseService',
-          'Retrieving presentation ID from session'
-        );
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'GetWalletResponseService',
-          'Presentation ID retrieved successfully',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              presentationId: mockPresentationId.toString(),
-            }),
-          })
-        );
       });
 
       it('should handle valid presentation ID types', async () => {
@@ -69,10 +45,7 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(mockSession, 'get').mockResolvedValue(validPresentationId);
 
         // Act
-        const result = await getPresentationIdFromSession(
-          mockSession,
-          mockLogger
-        );
+        const result = await getPresentationIdFromSession(mockSession);
 
         // Assert
         expect(result).toBe(validPresentationId);
@@ -87,19 +60,8 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(mockSession, 'keys').mockResolvedValue(['nonce', 'otherKey']);
 
         // Act & Assert
-        await expect(
-          getPresentationIdFromSession(mockSession, mockLogger)
-        ).rejects.toThrow(GetWalletResponseServiceError);
-
-        expect(mockLogger.logSecurity).toHaveBeenCalledWith(
-          'error',
-          'GetWalletResponseService',
-          'Presentation ID not found in session',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              sessionKeys: expect.arrayContaining(['nonce', 'otherKey']),
-            }),
-          })
+        await expect(getPresentationIdFromSession(mockSession)).rejects.toThrow(
+          GetWalletResponseServiceError
         );
       });
 
@@ -109,13 +71,12 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(mockSession, 'keys').mockResolvedValue([]);
 
         // Act & Assert
-        await expect(
-          getPresentationIdFromSession(mockSession, mockLogger)
-        ).rejects.toThrow(GetWalletResponseServiceError);
+        await expect(getPresentationIdFromSession(mockSession)).rejects.toThrow(
+          GetWalletResponseServiceError
+        );
 
         const thrownError = await getPresentationIdFromSession(
-          mockSession,
-          mockLogger
+          mockSession
         ).catch((error) => error);
 
         expect(thrownError).toBeInstanceOf(GetWalletResponseServiceError);
@@ -133,19 +94,8 @@ describe('GetWalletResponseService.helpers', () => {
         );
 
         // Act & Assert
-        await expect(
-          getPresentationIdFromSession(mockSession, mockLogger)
-        ).rejects.toThrow(GetWalletResponseServiceError);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'GetWalletResponseService',
-          'Failed to retrieve session keys for debugging',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'Session keys failed',
-            }),
-          })
+        await expect(getPresentationIdFromSession(mockSession)).rejects.toThrow(
+          GetWalletResponseServiceError
         );
       });
 
@@ -155,19 +105,8 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(mockSession, 'keys').mockRejectedValue('String error');
 
         // Act & Assert
-        await expect(
-          getPresentationIdFromSession(mockSession, mockLogger)
-        ).rejects.toThrow(GetWalletResponseServiceError);
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'GetWalletResponseService',
-          'Failed to retrieve session keys for debugging',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Unknown',
-              message: 'String error',
-            }),
-          })
+        await expect(getPresentationIdFromSession(mockSession)).rejects.toThrow(
+          GetWalletResponseServiceError
         );
       });
     });
@@ -179,7 +118,7 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(session, 'get').mockResolvedValue(mockPresentationId);
 
         // Act
-        const result = await getPresentationIdFromSession(session, mockLogger);
+        const result = await getPresentationIdFromSession(session);
 
         // Assert
         expect(result).toBe(mockPresentationId);
@@ -193,54 +132,8 @@ describe('GetWalletResponseService.helpers', () => {
         vi.spyOn(session, 'keys').mockResolvedValue([]);
 
         // Act & Assert
-        await expect(
-          getPresentationIdFromSession(session, mockLogger)
-        ).rejects.toThrow(GetWalletResponseServiceError);
-      });
-    });
-
-    describe('Logging verification', () => {
-      it('should log all expected debug messages', async () => {
-        // Arrange
-        vi.spyOn(mockSession, 'get').mockResolvedValue(mockPresentationId);
-
-        // Act
-        await getPresentationIdFromSession(mockSession, mockLogger);
-
-        // Assert
-        expect(mockLogger.debug).toHaveBeenCalledTimes(2);
-        expect(mockLogger.debug).toHaveBeenNthCalledWith(
-          1,
-          'GetWalletResponseService',
-          'Retrieving presentation ID from session'
-        );
-        expect(mockLogger.debug).toHaveBeenNthCalledWith(
-          2,
-          'GetWalletResponseService',
-          'Presentation ID retrieved successfully',
-          expect.any(Object)
-        );
-      });
-
-      it('should log security error when presentation ID is missing', async () => {
-        // Arrange
-        vi.spyOn(mockSession, 'get').mockResolvedValue(null);
-        vi.spyOn(mockSession, 'keys').mockResolvedValue(['key1', 'key2']);
-
-        // Act & Assert
-        await expect(
-          getPresentationIdFromSession(mockSession, mockLogger)
-        ).rejects.toThrow();
-
-        expect(mockLogger.logSecurity).toHaveBeenCalledWith(
-          'error',
-          'GetWalletResponseService',
-          'Presentation ID not found in session',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              sessionKeys: ['key1', 'key2'],
-            }),
-          })
+        await expect(getPresentationIdFromSession(session)).rejects.toThrow(
+          GetWalletResponseServiceError
         );
       });
     });
@@ -254,7 +147,7 @@ describe('GetWalletResponseService.helpers', () => {
         // Act & Assert
         let caughtError: GetWalletResponseServiceError | null = null;
         try {
-          await getPresentationIdFromSession(mockSession, mockLogger);
+          await getPresentationIdFromSession(mockSession);
         } catch (error) {
           caughtError = error as GetWalletResponseServiceError;
         }

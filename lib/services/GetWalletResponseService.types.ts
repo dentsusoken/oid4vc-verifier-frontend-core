@@ -2,7 +2,6 @@ import { JarmOption } from '../domain';
 import { MdocVerifier } from '../ports';
 import { GetRequest } from '../ports/out/http';
 import { VerifyJarmJwt } from '../ports/out/jose';
-import type { Logger } from '../ports/out/logging';
 import { Session, SessionSchemas } from '../ports/out/session';
 
 /**
@@ -22,9 +21,6 @@ export interface CreateGetWalletResponseServiceConfig {
 
   /** Session management interface */
   session: Session<SessionSchemas>;
-
-  /** Logger instance for logging events */
-  logger: Logger;
 
   /** MDOC verifier instance */
   mdocVerifier: MdocVerifier;

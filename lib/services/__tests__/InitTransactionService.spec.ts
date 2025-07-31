@@ -3,7 +3,6 @@ import { createInitTransactionService } from '../InitTransactionService';
 import { InitTransactionServiceError } from '../InitTransactionService.errors';
 
 describe('InitTransactionService', () => {
-  let mockLogger: any;
   let mockSession: any;
   let mockPost: any;
   let mockIsMobile: any;
@@ -17,16 +16,6 @@ describe('InitTransactionService', () => {
     vi.clearAllMocks();
 
     // Create mock functions
-    mockLogger = {
-      info: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-      warn: vi.fn(),
-      logSecurity: vi.fn(),
-      logAudit: vi.fn(),
-      logPerformance: vi.fn(),
-    };
-
     mockSession = {
       get: vi.fn(),
       set: vi.fn(),
@@ -64,22 +53,10 @@ describe('InitTransactionService', () => {
           post: mockPost,
           session: mockSession,
           generateWalletRedirectUri: mockGenerateWalletRedirectUri,
-          logger: mockLogger,
           generateEphemeralECDHPrivateJwk: mockGenerateEphemeralECDHPrivateJwk,
         });
 
         expect(typeof service).toBe('function');
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Service created successfully',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              apiBaseUrl: 'https://api.example.com',
-              apiPath: '/v1/transactions/init',
-              hasWalletUrl: true,
-            }),
-          })
-        );
       });
 
       it('should throw error when apiBaseUrl is missing', () => {
@@ -103,7 +80,6 @@ describe('InitTransactionService', () => {
             post: mockPost,
             session: mockSession,
             generateWalletRedirectUri: mockGenerateWalletRedirectUri,
-            logger: mockLogger,
             generateEphemeralECDHPrivateJwk:
               mockGenerateEphemeralECDHPrivateJwk,
           })
@@ -131,54 +107,10 @@ describe('InitTransactionService', () => {
             post: mockPost,
             session: mockSession,
             generateWalletRedirectUri: mockGenerateWalletRedirectUri,
-            logger: mockLogger,
             generateEphemeralECDHPrivateJwk:
               mockGenerateEphemeralECDHPrivateJwk,
           })
         ).toThrow(InitTransactionServiceError);
-      });
-
-      it('should log error when configuration is invalid', () => {
-        try {
-          createInitTransactionService({
-            apiBaseUrl: '',
-            apiPath: '',
-            publicUrl: '',
-            walletUrl: '',
-            walletResponseRedirectPath: '/callback',
-            walletResponseRedirectQueryTemplate: '{SESSION_ID}',
-            isMobile: mockIsMobile,
-            tokenType: 'vp_token',
-            generateNonce: mockGenerateNonce,
-            generatePresentationDefinition: mockGeneratePresentationDefinition,
-            responseMode: 'direct_post',
-            jarMode: 'by_reference',
-            presentationDefinitionMode: 'by_reference',
-            generateWalletResponseRedirectUriTemplate:
-              mockGenerateWalletResponseRedirectUriTemplate,
-            post: mockPost,
-            session: mockSession,
-            generateWalletRedirectUri: mockGenerateWalletRedirectUri,
-            logger: mockLogger,
-            generateEphemeralECDHPrivateJwk:
-              mockGenerateEphemeralECDHPrivateJwk,
-          });
-        } catch {
-          // Expected to throw
-        }
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Invalid configuration provided',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              hasApiBaseUrl: false,
-              hasApiPath: false,
-              hasPublicUrl: false,
-              hasWalletUrl: false,
-            }),
-          })
-        );
       });
     });
 
@@ -206,7 +138,6 @@ describe('InitTransactionService', () => {
           post: mockPost,
           session: mockSession,
           generateWalletRedirectUri: mockGenerateWalletRedirectUri,
-          logger: mockLogger,
           generateEphemeralECDHPrivateJwk: mockGenerateEphemeralECDHPrivateJwk,
         });
 
@@ -390,17 +321,6 @@ describe('InitTransactionService', () => {
         await expect(service(mockRequest)).rejects.toThrow(
           'Failed to communicate with InitTransaction API'
         );
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'API request failed',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'Network error',
-            }),
-          })
-        );
       });
 
       it('should throw error when API response parsing fails', async () => {
@@ -442,16 +362,6 @@ describe('InitTransactionService', () => {
         );
         await expect(service(mockRequest)).rejects.toThrow(
           'Failed to parse InitTransaction API response'
-        );
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Failed to parse API response',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              responseData: expect.stringContaining('invalid_field'),
-            }),
-          })
         );
       });
 
@@ -501,114 +411,6 @@ describe('InitTransactionService', () => {
         await expect(service(mockRequest)).rejects.toThrow(
           'Failed to generate wallet redirect URI'
         );
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Failed to generate wallet redirect URI',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'Invalid redirect URI',
-            }),
-          })
-        );
-      });
-
-      it('should log performance metrics on success', async () => {
-        // Setup successful execution
-        mockIsMobile.mockReturnValue(true);
-        mockGenerateNonce.mockReturnValue('test-nonce-123');
-        mockGeneratePresentationDefinition.mockReturnValue({
-          definition: 'test-presentation-definition',
-        });
-        mockGenerateWalletResponseRedirectUriTemplate.mockReturnValue(
-          'https://verifier.example.com/callback?session={SESSION_ID}'
-        );
-
-        const mockEphemeralKey = {
-          value: {
-            toJSON: () =>
-              '{"kty":"EC","d":"test-private-key","x":"test-x","y":"test-y"}',
-          },
-        };
-        mockGenerateEphemeralECDHPrivateJwk.mockResolvedValue(mockEphemeralKey);
-
-        const mockApiResponse = {
-          data: {
-            presentation_id: 'test-presentation-id',
-            client_id: 'test-client-id',
-            request_uri: 'https://api.example.com/request/test-id',
-          },
-          metadata: {
-            status: 200,
-            statusText: 'OK',
-            headers: {},
-            url: '',
-            ok: true,
-          },
-        };
-        mockPost.mockResolvedValue(mockApiResponse);
-
-        mockGenerateWalletRedirectUri.mockReturnValue(
-          'https://wallet.example.com?request_uri=https%3A//api.example.com/request/test-id'
-        );
-
-        await service(mockRequest);
-
-        expect(mockLogger.logPerformance).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Transaction initialization completed',
-          expect.objectContaining({
-            performance: expect.objectContaining({
-              duration: expect.any(Number),
-            }),
-            context: expect.objectContaining({
-              presentationId: 'test-presentation-id',
-              success: true,
-            }),
-          })
-        );
-
-        expect(mockLogger.logAudit).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'transaction.initialized',
-          expect.objectContaining({
-            context: expect.objectContaining({
-              presentationId: 'test-presentation-id',
-              userAgentType: 'mobile',
-              tokenType: 'vp_token',
-            }),
-          })
-        );
-      });
-
-      it('should log performance metrics on failure', async () => {
-        const requestWithoutUserAgent = new Request(
-          'https://verifier.example.com/init',
-          {
-            method: 'POST',
-          }
-        );
-
-        try {
-          await service(requestWithoutUserAgent);
-        } catch {
-          // Expected to throw
-        }
-
-        expect(mockLogger.logPerformance).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Transaction initialization failed',
-          expect.objectContaining({
-            performance: expect.objectContaining({
-              duration: expect.any(Number),
-            }),
-            context: expect.objectContaining({
-              success: false,
-              errorType: 'MISSING_USER_AGENT',
-            }),
-          })
-        );
       });
 
       it('should handle unexpected errors gracefully', async () => {
@@ -622,17 +424,6 @@ describe('InitTransactionService', () => {
         );
         await expect(service(mockRequest)).rejects.toThrow(
           'Unexpected error during transaction initialization'
-        );
-
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          'InitTransactionService',
-          'Transaction initialization failed with unexpected error',
-          expect.objectContaining({
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'Unexpected error in isMobile',
-            }),
-          })
         );
       });
     });

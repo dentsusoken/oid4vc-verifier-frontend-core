@@ -1,6 +1,5 @@
 import { EphemeralECDHPrivateJwk, Nonce, PresentationId } from '../domain';
 import { InitTransactionRequestJSON } from '../ports/input';
-import type { Logger } from '../ports/out/logging';
 import { Session, SessionSchemas } from '../ports/out/session';
 import { InitTransactionServiceError } from './InitTransactionService.errors';
 import { GenerateRequestParams } from './InitTransactionService.types';
@@ -81,37 +80,20 @@ export const generateRequest = ({
  * Validates the user agent from the request
  *
  * @param request - The incoming request
- * @param logger - Logger instance for logging events
  * @returns The user agent string
  * @throws {InitTransactionServiceError} When user agent is missing
  *
  * @internal
  */
-export const validateUserAgent = (request: Request, logger: Logger): string => {
+export const validateUserAgent = (request: Request): string => {
   const userAgent = request.headers.get('user-agent');
 
   if (!userAgent) {
-    logger.logSecurity(
-      'error',
-      'InitTransactionService',
-      'Missing user agent in request',
-      {
-        context: {
-          requestUrl: request.url,
-          headers: Object.fromEntries(request.headers.entries()),
-        },
-      }
-    );
-
     throw new InitTransactionServiceError(
       'MISSING_USER_AGENT',
       'User agent header is required to determine device type'
     );
   }
-
-  logger.debug('InitTransactionService', 'User agent validated successfully', {
-    context: { userAgent: userAgent.substring(0, 100) }, // Limit length for privacy
-  });
 
   return userAgent;
 };
@@ -123,7 +105,6 @@ export const validateUserAgent = (request: Request, logger: Logger): string => {
  * @param presentationId - The presentation ID to store
  * @param nonce - The nonce to store
  * @param ephemeralECDHPrivateJwk - The ephemeral ECDH private JWK to store
- * @param logger - Logger instance for logging events
  * @throws {InitTransactionServiceError} When session operations fail
  *
  * @internal
@@ -132,47 +113,16 @@ export const storeTransactionInSession = async (
   session: Session<SessionSchemas>,
   presentationId: PresentationId,
   nonce: Nonce,
-  ephemeralECDHPrivateJwk: EphemeralECDHPrivateJwk,
-  logger: Logger
+  ephemeralECDHPrivateJwk: EphemeralECDHPrivateJwk
 ): Promise<void> => {
   try {
-    logger.debug(
-      'InitTransactionService',
-      'Storing transaction data in session',
-      {
-        context: {
-          presentationId: presentationId.toString(),
-          hasNonce: !!nonce,
-        },
-      }
-    );
-
     await session.set('presentationId', presentationId);
     await session.set('nonce', nonce);
     await session.set(
       'ephemeralECDHPrivateJwk',
       ephemeralECDHPrivateJwk.toJSON()
     );
-
-    logger.info(
-      'InitTransactionService',
-      'Transaction data stored successfully',
-      {
-        context: { presentationId: presentationId.toString() },
-      }
-    );
   } catch (error) {
-    logger.error('InitTransactionService', 'Failed to store transaction data', {
-      context: {
-        presentationId: presentationId.toString(),
-      },
-      error: {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-    });
-
     throw new InitTransactionServiceError(
       'SESSION_ERROR',
       'Failed to store transaction data in session',

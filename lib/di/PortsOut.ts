@@ -10,7 +10,6 @@ import {
   GenerateEphemeralECDHPrivateJwk,
   VerifyJarmJwt,
 } from '../ports/out/jose';
-import { Logger } from '../ports/out/logging';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
 
@@ -29,7 +28,6 @@ import { Session, SessionSchemas } from '../ports/out/session';
  * The interface is organized by functional areas:
  * - **cfg**: Configuration and utility functions
  * - **http**: HTTP communication and device detection
- * - **logging**: Structured logging capabilities
  * - **prex**: Presentation exchange (credential) handling
  * - **session**: Session and state management
  *
@@ -45,15 +43,11 @@ import { Session, SessionSchemas } from '../ports/out/session';
  *     return createDefaultFetcher();
  *   }
  *
- *   logger(): Logger {
- *     return createDefaultLogger(this.config.loggerConfig());
- *   }
  *   // ... other implementations
  * }
  *
  * // Usage in service layer
  * const portsOut: PortsOut = new DefaultPortsOut(config);
- * const logger = portsOut.logger();
  * const fetcher = portsOut.fetcher();
  * ```
  *
@@ -111,17 +105,6 @@ export interface PortsOut {
    * @returns IsMobile function for device type detection
    */
   isMobile(): IsMobile;
-
-  // logging
-  /**
-   * Returns a configured logger instance
-   *
-   * Provides structured logging with different levels, types,
-   * and security-aware data sanitization.
-   *
-   * @returns Logger instance configured for the current environment
-   */
-  logger(): Logger;
 
   // prex
   /**

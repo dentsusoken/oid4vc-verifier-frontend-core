@@ -1,6 +1,5 @@
 import { parseJarmOption } from '../adapters/out/jose';
 import { JarmOption } from '../domain';
-import { LoggerConfig } from '../ports';
 import {
   JarMode,
   PresentationDefinitionMode,
@@ -20,7 +19,6 @@ import { Configuration } from './Configuration';
  *
  * The class includes:
  * - **Default implementations** for optional protocol settings and view paths
- * - **Environment-aware** logger configuration (production vs development)
  * - **Abstract methods** for URLs and API endpoints that must be environment-specific
  * - **Configurable defaults** that can be overridden in concrete implementations
  *
@@ -63,7 +61,6 @@ import { Configuration } from './Configuration';
  *
  * // Usage
  * const config = new DevelopmentConfiguration();
- * const logger = createLogger(config.loggerConfig()); // Automatically development config
  * ```
  *
  * @public
@@ -135,17 +132,6 @@ export abstract class AbstractConfiguration implements Configuration {
    * @returns Wallet response redirect path string
    */
   abstract walletResponseRedirectPath(): string;
-
-  /**
-   * Logger configuration
-   *
-   * **Abstract method** - Must be implemented by concrete classes.
-   * Should return the appropriate logger configuration based on the
-   * environment.
-   *
-   * @returns Environment-appropriate logger configuration
-   */
-  abstract loggerConfig(): LoggerConfig;
 
   // Default implementations - can be overridden if needed
 

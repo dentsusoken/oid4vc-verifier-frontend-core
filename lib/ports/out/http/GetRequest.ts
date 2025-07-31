@@ -20,12 +20,6 @@ import { HttpRequestOptions, HttpResponse } from './types';
  * const response = await get('/api/users/123', userSchema);
  * console.log(response.data.name); // Type-safe access
  *
- * // With options including logging
- * const response = await get('/api/users/123', userSchema, {
- *   headers: { 'Authorization': 'Bearer token' },
- *   timeout: 5000,
- *   enableLogging: process.env.NODE_ENV === 'development'
- * });
  * ```
  *
  * @public
@@ -47,9 +41,7 @@ export interface GetRequest {
    * const userSchema = z.object({ id: z.string(), name: z.string() });
    *
    * try {
-   *   const response = await get('/api/users/123', userSchema, {
-   *     enableLogging: true // Enable detailed request/response logging
-   *   });
+   *   const response = await get('/api/users/123', userSchema);
    *   console.log(`User: ${response.data.name}`);
    *   console.log(`Status: ${response.metadata.status}`);
    * } catch (error) {
@@ -62,7 +54,6 @@ export interface GetRequest {
    * ```
    */
   <T>(
-    // TODO: TsDoc更新
     baseUrl: string,
     path: string,
     query: Record<string, string>,

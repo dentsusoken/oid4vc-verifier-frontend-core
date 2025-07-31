@@ -13,7 +13,6 @@ import { GenerateNonce } from '../ports/out/cfg/GenerateNonce';
 import { PostRequest } from '../ports/out/http';
 import { IsMobile } from '../ports/out/http/isMobile';
 import { GenerateEphemeralECDHPrivateJwk } from '../ports/out/jose';
-import type { Logger } from '../ports/out/logging';
 import { GeneratePresentationDefinition } from '../ports/out/prex';
 import { Session, SessionSchemas } from '../ports/out/session';
 
@@ -116,9 +115,6 @@ export interface CreateInitTransactionServiceConfig {
 
   /** Function to generate wallet redirect URIs */
   generateWalletRedirectUri: GenerateWalletRedirectUri;
-
-  /** Logger instance for logging events */
-  logger: Logger;
 
   /** Function to generate ephemeral ECDH private JWK */
   generateEphemeralECDHPrivateJwk: GenerateEphemeralECDHPrivateJwk;

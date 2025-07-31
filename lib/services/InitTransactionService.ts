@@ -51,7 +51,6 @@ import { CreateInitTransactionServiceConfig } from './InitTransactionService.typ
  *   post: async (url, path, body, schema) => ({ data: schema.parse(JSON.parse(body)) }),
  *   session: sessionImplementation,
  *   generateWalletRedirectUri: (walletUrl, query) => walletUrl + '?' + new URLSearchParams(query),
- *   logger: loggerImplementation,
  *   generateEphemeralECDHPrivateJwk: ephemeralKeyGeneratorImplementation
  * });
  *
@@ -80,91 +79,32 @@ export const createInitTransactionService = ({
   session,
   generateWalletRedirectUri,
   walletUrl,
-  logger,
   generateEphemeralECDHPrivateJwk,
 }: CreateInitTransactionServiceConfig): InitTransaction => {
   // Validate configuration
   if (!apiBaseUrl || !apiPath || !publicUrl || !walletUrl) {
-    logger.error('InitTransactionService', 'Invalid configuration provided', {
-      context: {
-        hasApiBaseUrl: !!apiBaseUrl,
-        hasApiPath: !!apiPath,
-        hasPublicUrl: !!publicUrl,
-        hasWalletUrl: !!walletUrl,
-      },
-    });
-
     throw new InitTransactionServiceError(
       'INVALID_RESPONSE',
       'Required configuration parameters are missing'
     );
   }
 
-  logger.info('InitTransactionService', 'Service created successfully', {
-    context: {
-      apiBaseUrl: apiBaseUrl.substring(0, 50), // Limit for privacy
-      apiPath,
-      hasWalletUrl: !!walletUrl,
-    },
-  });
-
   return async (request: Request) => {
-    const startTime = performance.now();
-
-    logger.info(
-      'InitTransactionService',
-      'Starting transaction initialization',
-      {
-        requestId: crypto.randomUUID(),
-        context: {
-          requestUrl: request.url,
-          method: request.method,
-        },
-      }
-    );
-
     try {
       // Validate user agent
-      const userAgent = validateUserAgent(request, logger);
+      const userAgent = validateUserAgent(request);
 
       // Generate nonce for this transaction
       const nonce = generateNonce();
 
-      logger.debug(
-        'InitTransactionService',
-        'Generated nonce for transaction',
-        {
-          context: {
-            hasNonce: !!nonce,
-            userAgentType: isMobile(userAgent) ? 'mobile' : 'desktop',
-          },
-        }
-      );
-
       const ephemeralECDHPrivateJwk = (await generateEphemeralECDHPrivateJwk())
         .value!;
-
-      logger.debug(
-        'InitTransactionService',
-        'Generated ephemeral ECDH private JWK',
-        {
-          context: {
-            hasEphemeralECDHPrivateJwk: !!ephemeralECDHPrivateJwk,
-          },
-        }
-      );
 
       const publicJwk = JSON.parse(ephemeralECDHPrivateJwk.toJSON());
       delete publicJwk.d;
 
       const ephemeralECDHPublicJwk = new EphemeralECDHPublicJwk(
         JSON.stringify(publicJwk)
-      );
-
-      // Create InitTransaction request
-      logger.debug(
-        'InitTransactionService',
-        'Creating InitTransaction request'
       );
 
       const initTransactionRequest = generateRequest({
@@ -182,19 +122,6 @@ export const createInitTransactionService = ({
         ephemeralECDHPublicJwk,
       });
 
-      // Send request to API
-      logger.info(
-        'InitTransactionService',
-        'Sending request to InitTransaction API',
-        {
-          context: {
-            apiBaseUrl: apiBaseUrl.substring(0, 50),
-            apiPath,
-            requestType: initTransactionRequest.type,
-          },
-        }
-      );
-
       let apiResponse;
       try {
         apiResponse = await post(
@@ -203,30 +130,7 @@ export const createInitTransactionService = ({
           JSON.stringify(initTransactionRequest),
           initTransactionResponseSchema
         );
-
-        logger.info(
-          'InitTransactionService',
-          'API request completed successfully',
-          {
-            context: {
-              hasResponse: !!apiResponse,
-              hasData: !!apiResponse?.data,
-            },
-          }
-        );
       } catch (error) {
-        logger.error('InitTransactionService', 'API request failed', {
-          context: {
-            apiBaseUrl: apiBaseUrl.substring(0, 50),
-            apiPath,
-          },
-          error: {
-            name: error instanceof Error ? error.name : 'Unknown',
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-          },
-        });
-
         throw new InitTransactionServiceError(
           'API_REQUEST_FAILED',
           'Failed to communicate with InitTransaction API',
@@ -234,36 +138,12 @@ export const createInitTransactionService = ({
         );
       }
 
-      // Parse API response
-      logger.debug('InitTransactionService', 'Parsing API response');
-
       let initTransactionResponse;
       try {
         initTransactionResponse = InitTransactionResponse.fromJSON(
           apiResponse.data
         );
-
-        logger.info(
-          'InitTransactionService',
-          'API response parsed successfully',
-          {
-            context: {
-              presentationId: initTransactionResponse.presentationId.toString(),
-            },
-          }
-        );
       } catch (error) {
-        logger.error('InitTransactionService', 'Failed to parse API response', {
-          context: {
-            responseData: JSON.stringify(apiResponse.data).substring(0, 200),
-          },
-          error: {
-            name: error instanceof Error ? error.name : 'Unknown',
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-          },
-        });
-
         throw new InitTransactionServiceError(
           'INVALID_RESPONSE',
           'Failed to parse InitTransaction API response',
@@ -276,17 +156,10 @@ export const createInitTransactionService = ({
         session,
         initTransactionResponse.presentationId,
         nonce,
-        ephemeralECDHPrivateJwk,
-        logger
+        ephemeralECDHPrivateJwk
       );
 
       // Generate wallet redirect URI
-      logger.debug('InitTransactionService', 'Generating wallet redirect URI', {
-        context: {
-          walletUrl: walletUrl.substring(0, 50),
-          presentationId: initTransactionResponse.presentationId.toString(),
-        },
-      });
 
       let walletRedirectUri;
       try {
@@ -294,34 +167,7 @@ export const createInitTransactionService = ({
           walletUrl,
           initTransactionResponse.toWalletRedirectParams()
         );
-
-        logger.info(
-          'InitTransactionService',
-          'Wallet redirect URI generated successfully',
-          {
-            context: {
-              hasRedirectUri: !!walletRedirectUri,
-              uriLength: walletRedirectUri?.length || 0,
-            },
-          }
-        );
       } catch (error) {
-        logger.error(
-          'InitTransactionService',
-          'Failed to generate wallet redirect URI',
-          {
-            context: {
-              walletUrl: walletUrl.substring(0, 50),
-              presentationId: initTransactionResponse.presentationId.toString(),
-            },
-            error: {
-              name: error instanceof Error ? error.name : 'Unknown',
-              message: error instanceof Error ? error.message : String(error),
-              stack: error instanceof Error ? error.stack : undefined,
-            },
-          }
-        );
-
         throw new InitTransactionServiceError(
           'INVALID_RESPONSE',
           'Failed to generate wallet redirect URI',
@@ -329,90 +175,16 @@ export const createInitTransactionService = ({
         );
       }
 
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
-      logger.logPerformance(
-        'InitTransactionService',
-        'Transaction initialization completed',
-        {
-          performance: {
-            duration: Math.round(duration),
-          },
-          context: {
-            presentationId: initTransactionResponse.presentationId.toString(),
-            success: true,
-          },
-        }
-      );
-
-      logger.logAudit('InitTransactionService', 'transaction.initialized', {
-        context: {
-          presentationId: initTransactionResponse.presentationId.toString(),
-          userAgentType: isMobile(userAgent) ? 'mobile' : 'desktop',
-          tokenType: initTransactionRequest.type,
-        },
-      });
-
       return {
         walletRedirectUri,
         isMobile: isMobile(userAgent),
       };
     } catch (error) {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-
-      // Log performance even for failed requests
-      logger.logPerformance(
-        'InitTransactionService',
-        'Transaction initialization failed',
-        {
-          performance: {
-            duration: Math.round(duration),
-          },
-          context: {
-            success: false,
-            errorType:
-              error instanceof InitTransactionServiceError
-                ? error.errorType
-                : 'UNKNOWN',
-          },
-        }
-      );
-
-      // Re-throw InitTransactionServiceError as-is
       if (error instanceof InitTransactionServiceError) {
-        logger.error(
-          'InitTransactionService',
-          'Transaction initialization failed with known error',
-          {
-            context: {
-              errorType: error.errorType,
-              details: error.details,
-            },
-            error: {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-            },
-          }
-        );
         throw error;
       }
 
       // Wrap other errors
-      logger.error(
-        'InitTransactionService',
-        'Transaction initialization failed with unexpected error',
-        {
-          error: {
-            name: error instanceof Error ? error.name : 'Unknown',
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-          },
-        }
-      );
-
       throw new InitTransactionServiceError(
         'API_REQUEST_FAILED',
         'Unexpected error during transaction initialization',

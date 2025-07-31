@@ -157,7 +157,6 @@ describe('MockPortsOut', () => {
       ).toBe('function');
       expect(typeof mockPortsOut.fetcher).toBe('function');
       expect(typeof mockPortsOut.isMobile).toBe('function');
-      expect(typeof mockPortsOut.logger).toBe('function');
       expect(typeof mockPortsOut.generateEphemeralECDHPrivateJwk).toBe(
         'function'
       );
@@ -167,26 +166,15 @@ describe('MockPortsOut', () => {
     it('should return valid implementations from inherited methods', () => {
       const nonce = mockPortsOut.generateNonce();
       const fetcher = mockPortsOut.fetcher();
-      const logger = mockPortsOut.logger();
 
       expect(typeof nonce).toBe('function');
       expect(typeof fetcher).toBe('object');
-      expect(typeof logger).toBe('object');
     });
   });
 
   describe('Integration with Configuration', () => {
     it('should use injected configuration', () => {
-      const logger = mockPortsOut.logger();
-
-      expect(logger).toBeDefined();
-      expect(logger.config).toBeDefined();
-    });
-
-    it('should maintain configuration reference', () => {
-      // Configuration should be accessible through inherited functionality
-      const logger = mockPortsOut.logger();
-      expect(logger.config.minLevel).toBe('info');
+      expect(mockConfig).toBeDefined();
     });
   });
 
@@ -217,7 +205,6 @@ describe('MockPortsOut', () => {
         'generateWalletResponseRedirectUriTemplate',
         'fetcher',
         'isMobile',
-        'logger',
         'generatePresentationDefinition',
         'mdocVerifier',
         'session',

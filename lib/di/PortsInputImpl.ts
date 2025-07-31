@@ -32,7 +32,6 @@ export class PortsInputImpl implements PortsInput {
         this.#portsOut.generateWalletResponseRedirectUriTemplate(),
       post: this.#portsOut.fetcher().post,
       generateWalletRedirectUri: this.#portsOut.generateWalletRedirectUri(),
-      logger: this.#portsOut.logger(),
       generateEphemeralECDHPrivateJwk:
         this.#portsOut.generateEphemeralECDHPrivateJwk(),
     });
@@ -44,7 +43,6 @@ export class PortsInputImpl implements PortsInput {
       apiPath: this.#config.getWalletResponseApiPath(),
       session: this.#portsOut.session(),
       get: this.#portsOut.fetcher().get,
-      logger: this.#portsOut.logger(),
       mdocVerifier: this.#portsOut.mdocVerifier(),
       verifyJarmJwt: this.#portsOut.verifyJarmJwt(),
       jarmOption: this.#config.jarmOption(),

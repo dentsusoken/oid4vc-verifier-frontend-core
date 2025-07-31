@@ -1,4 +1,3 @@
-import { LoggerConfig } from '../ports';
 import { AbstractConfiguration } from './AbstractConfiguration';
 
 /**
@@ -69,26 +68,5 @@ export class MockConfiguration extends AbstractConfiguration {
    */
   walletResponseRedirectPath(): string {
     return '/callback';
-  }
-
-  /**
-   * Returns the logger configuration for testing
-   *
-   * Provides a comprehensive logger configuration with test-appropriate
-   * settings including logging levels and feature flags.
-   *
-   * @returns Logger configuration object with test settings
-   */
-  loggerConfig(): LoggerConfig {
-    return {
-      minLevel: 'info',
-      processLogging: true,
-      secretLogging: false,
-      securityLogging: true,
-      performanceLogging: false,
-      auditLogging: true,
-      includeTimestamp: true,
-      includeMetadata: false,
-    };
   }
 }

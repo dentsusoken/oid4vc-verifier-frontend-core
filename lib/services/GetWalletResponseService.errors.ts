@@ -11,7 +11,8 @@ export class GetWalletResponseServiceError extends Error {
       | 'API_REQUEST_FAILED'
       | 'INVALID_RESPONSE'
       | 'SESSION_ERROR'
-      | 'MISSING_EPHEMERAL_ECDH_PRIVATE_JWK',
+      | 'MISSING_EPHEMERAL_ECDH_PRIVATE_JWK'
+      | 'JARM_VERIFICATION_FAILED',
     public readonly details: string,
     public readonly originalError?: Error
   ) {
