@@ -115,7 +115,6 @@ export const createGetWalletResponseService = ({
 
       let walletResponse;
       try {
-        console.log('apiResponse.data :>> ', apiResponse.data);
         walletResponse = GetWalletResponseResponse.fromJSON(apiResponse.data);
       } catch (error) {
         throw new GetWalletResponseServiceError(
