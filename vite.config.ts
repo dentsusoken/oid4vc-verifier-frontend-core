@@ -5,16 +5,34 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
   plugins: [
     dts({
-      rollupTypes: true,
+      rollupTypes: false,
       exclude: ['**/*.spec.ts', '**/*.test.ts'],
+      outDir: 'dist',
+      entryRoot: 'lib',
+      staticImport: true,
     }),
   ],
   build: {
     lib: {
-      entry: './lib/index.ts',
-      name: 'oid4vc-verifier-endpoint-core',
+      entry: {
+        index: './lib/index.ts',
+        'ports/input': './lib/ports/input/index.ts',
+        'ports/out': './lib/ports/out/index.ts',
+        services: './lib/services/index.ts',
+        di: './lib/di/index.ts',
+        domain: './lib/domain/index.ts',
+        'adapters/out': './lib/adapters/out/index.ts',
+      },
+      name: '@vecrea/oid4vc-verifier-frontend-core',
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
+      fileName: (format, entryName) => {
+        if (entryName === 'index') {
+          return `index.${format === 'es' ? 'mjs' : 'cjs'}`;
+        }
+        // ports/input -> ports/input, ports/out -> ports/out のように変換
+        // const normalizedName = entryName.replace('/', '.');
+        return `${entryName}/index.${format === 'es' ? 'mjs' : 'cjs'}`;
+      },
     },
     rollupOptions: {
       external: ['mdoc-cbor-ts'],

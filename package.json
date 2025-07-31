@@ -14,6 +14,36 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./ports.input": {
+      "types": "./dist/ports/input/index.d.ts",
+      "import": "./dist/ports/input/index.mjs",
+      "require": "./dist/ports/input/index.cjs"
+    },
+    "./ports.out": {
+      "types": "./dist/ports/out/index.d.ts",
+      "import": "./dist/ports/out/index.mjs",
+      "require": "./dist/ports/out/index.cjs"
+    },
+    "./services": {
+      "types": "./dist/services/index.d.ts",
+      "import": "./dist/services/index.mjs",
+      "require": "./dist/services/index.cjs"
+    },
+    "./di": {
+      "types": "./dist/di/index.d.ts",
+      "import": "./dist/di/index.mjs",
+      "require": "./dist/di/index.cjs"
+    },
+    "./domain": {
+      "types": "./dist/domain/index.d.ts",
+      "import": "./dist/domain/index.mjs",
+      "require": "./dist/domain/index.cjs"
+    },
+    "./adapters.out": {
+      "types": "./dist/adapters/out/index.d.ts",
+      "import": "./dist/adapters/out/index.mjs",
+      "require": "./dist/adapters/out/index.cjs"
     }
   },
   "scripts": {
