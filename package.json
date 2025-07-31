@@ -1,5 +1,5 @@
 {
-  "name": "oid4vc-verifier-frontend-core",
+  "name": "@vecrea/oid4vc-verifier-frontend-core",
   "private": true,
   "version": "0.0.0",
   "type": "module",
