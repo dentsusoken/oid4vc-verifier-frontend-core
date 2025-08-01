@@ -29,8 +29,6 @@ export default defineConfig({
         if (entryName === 'index') {
           return `index.${format === 'es' ? 'mjs' : 'cjs'}`;
         }
-        // ports/input -> ports/input, ports/out -> ports/out のように変換
-        // const normalizedName = entryName.replace('/', '.');
         return `${entryName}/index.${format === 'es' ? 'mjs' : 'cjs'}`;
       },
     },
