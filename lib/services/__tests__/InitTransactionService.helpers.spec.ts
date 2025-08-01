@@ -6,6 +6,7 @@ import {
   Nonce,
   PresentationId,
 } from '../../domain';
+import { GeneratePresentationDefinition } from '../../ports';
 import { InitTransactionServiceError } from '../InitTransactionService.errors';
 import {
   generateRequest,
@@ -17,7 +18,9 @@ import {
  * Test suite for InitTransactionService.helpers
  */
 describe('InitTransactionService.helpers', () => {
-  let mockPortsOut: MockPortsOut;
+  let mockPortsOut: MockPortsOut<
+    Record<string, GeneratePresentationDefinition>
+  >;
 
   const mockPresentationId = 'test-presentation-id-123' as PresentationId;
   const mockNonce = 'test-nonce-456' as Nonce;
@@ -123,7 +126,7 @@ describe('InitTransactionService.helpers', () => {
 
       it('should work with MockPortsOut generatePresentationDefinition', () => {
         // Arrange
-        const generatePD = mockPortsOut.generatePresentationDefinition();
+        const generatePD = mockPortsOut.generatePresentationDefinition('test');
         const params = {
           ...baseParams,
           isMobile: false,

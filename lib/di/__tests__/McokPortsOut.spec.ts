@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { GeneratePresentationDefinition } from '../../ports';
 import { AbstractPortsOut } from '../AbstractPortsOut';
 import { MockPortsOut } from '../McokPortsOut';
 
@@ -6,10 +7,14 @@ import { MockPortsOut } from '../McokPortsOut';
  * Test suite for MockPortsOut class
  */
 describe('MockPortsOut', () => {
-  let mockPortsOut: MockPortsOut;
+  let mockPortsOut: MockPortsOut<
+    Record<string, GeneratePresentationDefinition>
+  >;
 
   beforeEach(() => {
-    mockPortsOut = new MockPortsOut();
+    mockPortsOut = new MockPortsOut<
+      Record<string, GeneratePresentationDefinition>
+    >();
   });
 
   describe('Class Structure', () => {
@@ -32,7 +37,7 @@ describe('MockPortsOut', () => {
 
   describe('Abstract Method Implementations', () => {
     it('should implement generatePresentationDefinition method', () => {
-      const generator = mockPortsOut.generatePresentationDefinition();
+      const generator = mockPortsOut.generatePresentationDefinition('test');
 
       expect(generator).toBeDefined();
       expect(typeof generator).toBe('function');
@@ -59,7 +64,7 @@ describe('MockPortsOut', () => {
 
   describe('Presentation Definition Generator', () => {
     it('should return a valid presentation definition generator', () => {
-      const generator = mockPortsOut.generatePresentationDefinition();
+      const generator = mockPortsOut.generatePresentationDefinition('test');
       const presentationDef = generator();
 
       expect(presentationDef).toBeDefined();
@@ -70,7 +75,7 @@ describe('MockPortsOut', () => {
     });
 
     it('should generate consistent presentation definitions', () => {
-      const generator = mockPortsOut.generatePresentationDefinition();
+      const generator = mockPortsOut.generatePresentationDefinition('test');
       const def1 = generator();
       const def2 = generator();
 
@@ -80,7 +85,7 @@ describe('MockPortsOut', () => {
     });
 
     it('should return presentation definition with valid structure', () => {
-      const generator = mockPortsOut.generatePresentationDefinition();
+      const generator = mockPortsOut.generatePresentationDefinition('test');
       const presentationDef = generator();
 
       expect(Array.isArray(presentationDef.input_descriptors)).toBe(true);
@@ -173,8 +178,8 @@ describe('MockPortsOut', () => {
     it('should provide consistent behavior across multiple instantiations', () => {
       const mockPortsOut2 = new MockPortsOut();
 
-      const generator1 = mockPortsOut.generatePresentationDefinition();
-      const generator2 = mockPortsOut2.generatePresentationDefinition();
+      const generator1 = mockPortsOut.generatePresentationDefinition('test');
+      const generator2 = mockPortsOut2.generatePresentationDefinition('test');
 
       const def1 = generator1();
       const def2 = generator2();
@@ -184,7 +189,7 @@ describe('MockPortsOut', () => {
 
     it('should be suitable for dependency injection', () => {
       // MockPortsOut should satisfy PortsOut interface requirements
-      expect(mockPortsOut.generatePresentationDefinition()).toBeDefined();
+      expect(mockPortsOut.generatePresentationDefinition('test')).toBeDefined();
       expect(mockPortsOut.mdocVerifier()).toBeDefined();
       expect(mockPortsOut.session()).toBeDefined();
     });

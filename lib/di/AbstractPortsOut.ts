@@ -46,8 +46,8 @@ import { PortsOut } from './PortsOut';
  * @example
  * ```typescript
  * // Concrete implementation
- * class ProductionPortsOut extends AbstractPortsOut {
- *   generatePresentationDefinition(): GeneratePresentationDefinition {
+ * class ProductionPortsOut<T extends Record<string, GeneratePresentationDefinition>> extends AbstractPortsOut<T> {
+ *   generatePresentationDefinition(key: keyof T): GeneratePresentationDefinition {
  *     return createMyPresentationDefinitionService();
  *   }
  *
@@ -63,7 +63,10 @@ import { PortsOut } from './PortsOut';
  *
  * @public
  */
-export abstract class AbstractPortsOut implements PortsOut {
+export abstract class AbstractPortsOut<
+  T extends Record<string, GeneratePresentationDefinition>
+> implements PortsOut<T>
+{
   // cfg
   /**
    * Returns the default nonce generation function
@@ -134,9 +137,13 @@ export abstract class AbstractPortsOut implements PortsOut {
    * Should provide functionality for creating presentation definitions
    * according to the DIF Presentation Exchange specification.
    *
+   * @param key - The key to use for the presentation definition
+   *
    * @returns GeneratePresentationDefinition implementation
    */
-  abstract generatePresentationDefinition(): GeneratePresentationDefinition;
+  abstract generatePresentationDefinition(
+    key: keyof T
+  ): GeneratePresentationDefinition;
 
   // mdoc
   /**

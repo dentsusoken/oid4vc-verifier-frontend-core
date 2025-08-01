@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockPortsOut } from '../../di/McokPortsOut';
 import { PresentationId } from '../../domain';
+import { GeneratePresentationDefinition } from '../../ports';
 import { GetWalletResponseServiceError } from '../GetWalletResponseService.errors';
 import { getPresentationIdFromSession } from '../GetWalletResponseService.helpers';
 
@@ -8,7 +9,9 @@ import { getPresentationIdFromSession } from '../GetWalletResponseService.helper
  * Test suite for GetWalletResponseService.helpers
  */
 describe('GetWalletResponseService.helpers', () => {
-  let mockPortsOut: MockPortsOut;
+  let mockPortsOut: MockPortsOut<
+    Record<string, GeneratePresentationDefinition>
+  >;
   let mockSession: any;
 
   const mockPresentationId = 'test-presentation-id-123' as PresentationId;

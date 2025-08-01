@@ -1,3 +1,4 @@
+import { GeneratePresentationDefinition } from '../ports';
 import { GetWalletResponse, InitTransaction } from '../ports/input';
 
 /**
@@ -28,7 +29,9 @@ import { GetWalletResponse, InitTransaction } from '../ports/input';
  *
  * @public
  */
-export interface PortsInput {
+export interface PortsInput<
+  T extends Record<string, GeneratePresentationDefinition>
+> {
   /**
    * Creates and returns an InitTransaction use case service
    *
@@ -38,6 +41,8 @@ export interface PortsInput {
    * - Presentation request creation
    * - Wallet redirect URI construction
    * - Session management
+   *
+   * @param key - The key to use for the presentation definition
    *
    * @returns InitTransaction service instance configured with necessary dependencies
    *
@@ -51,7 +56,7 @@ export interface PortsInput {
    * });
    * ```
    */
-  initTransaction(): InitTransaction;
+  initTransaction(key: keyof T): InitTransaction;
 
   /**
    * Creates and returns a GetWalletResponse use case service

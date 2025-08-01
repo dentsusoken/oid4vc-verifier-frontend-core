@@ -53,7 +53,9 @@ import { Session, SessionSchemas } from '../ports/out/session';
  *
  * @public
  */
-export interface PortsOut {
+export interface PortsOut<
+  T extends Record<string, GeneratePresentationDefinition>
+> {
   // cfg
   /**
    * Returns a nonce generation function
@@ -113,9 +115,11 @@ export interface PortsOut {
    * Creates presentation definitions for credential verification
    * requests according to the DIF Presentation Exchange specification.
    *
+   * @param key - The key to use for the presentation definition
+   *
    * @returns GeneratePresentationDefinition function
    */
-  generatePresentationDefinition(): GeneratePresentationDefinition;
+  generatePresentationDefinition(key: keyof T): GeneratePresentationDefinition;
 
   // mdoc
   /**

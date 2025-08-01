@@ -24,16 +24,20 @@ import { AbstractPortsOut } from './AbstractPortsOut';
  *
  * @public
  */
-export class MockPortsOut extends AbstractPortsOut {
+export class MockPortsOut<
+  T extends Record<string, GeneratePresentationDefinition>
+> extends AbstractPortsOut<T> {
   /**
    * Returns a mock implementation of presentation definition generator
    *
    * Provides a test-friendly implementation that can be used to generate
    * presentation definitions without external dependencies.
    *
+   * @param key - The key to use for the presentation definition
+   *
    * @returns Mock presentation definition generator function
    */
-  generatePresentationDefinition(): GeneratePresentationDefinition {
+  generatePresentationDefinition(_: keyof T): GeneratePresentationDefinition {
     return mcokGeneratePresentationDefinition;
   }
 
